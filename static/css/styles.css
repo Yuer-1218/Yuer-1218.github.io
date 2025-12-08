@@ -13,7 +13,7 @@
 :root {
   --bs-blue: #2937f0;
   --bs-indigo: #6610f2;
-  --bs-purple: #9f1ae2;
+  --bs-purple: #701e5e;
   --bs-pink: #d63384;
   --bs-red: #dc3545;
   --bs-orange: #fd7e14;
@@ -10885,7 +10885,7 @@ section {
 }
 #mainNav .navbar-nav .nav-item .nav-link:hover {
 
-   color: var(--bs-blue)
+   color: var(--bs-purple)
 }
 #mainNav .navbar-nav .nav-item .nav-link.active {
   color: #2937f0;
