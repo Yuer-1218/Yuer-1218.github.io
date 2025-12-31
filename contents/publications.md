@@ -1,9 +1,12 @@
-#### Submitted
+### **Publications & Manuscripts**
 
-- <strong>Dongyun Zou</strong>, Zhuoyang Zhang, Junyu Chen, Wenkun He, Qinhe Peng, Hanrong Ye, Yao Lu, Hongxu Yin, Yu Wang, Song Han and Han Cai. JetViT: Efficient High-Resolution Vision Transformer with Post-Training Attention Search. In submission.
+#### **Submitted & Under Review**
 
-#### Published
+- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "Integrated Discovery and State-Aware Servicing for Mobile AUVs in Underwater Networks: Modeling and Performance Analysis." **Submitted to IEEE Transactions on Wireless Communications (TWC)**, 2025.
+- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "Offset Pointing for Energy-efficient Reception in Underwater Optical Wireless Communication: Modeling and Performance Analysis." **Submitted to IEEE Internet of Things Journal (IoTJ)**, 2025.
 
-- <strong>Dongyun Zou </strong>*, Enshu Liu*, Xuefei Ning, Huazhong Yang and Yu Wang. USF++: A Unified Sampling Framework for Solver Searching of Diffusion Probabilistic Models. <strong>Transactions on Pattern Analysis and Machine Intelligence</strong> [[Paper]](https://ieeexplore.ieee.org/document/11275964) [[Code]](https://github.com/thu-nics/USF)
+#### **Published & Forthcoming**
 
-- Junyu Chen, <strong>Dongyun Zou</strong>, Wenkun He, Junsong Chen,Enze Xie, Song Han and Han Cai. DC-AE 1.5: Accelerating Diffusion Model Convergence with Structured Latent Space. <strong>Proceedings of the IEEE/CVF International Conference on Computer Vision. 2025.</strong> [[Paper]](https://openaccess.thecvf.com/content/ICCV2025/html/Chen_DC-AE_1.5_Accelerating_Diffusion_Model_Convergence_with_Structured_Latent_Space_ICCV_2025_paper.html) [[Code]](https://github.com/dc-ai-projects/DC-Gen)
+- **Qiyu Ma**, Wanli Ni, and Zhijin Qin. "Large AI Model-Enabled Generative Semantic Communications for Image Transmission." **Accepted for publication at IEEE GlobeCOM**, 2025.
+- **Qiyu Ma** (Chapter Contributor). *Deep Learning Enabled Semantic Communication*, edited by Z. Qin et al., **Wiley**, Forthcoming Nov. 2025.
+- Zhijin Qin, **Qiyu Ma**, and Wanli Ni. "A semantic communication method based on generative AI large model." **China Patent**, 2025.
