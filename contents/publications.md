@@ -1,12 +1,15 @@
 ### **Publications & Manuscripts**
 
-#### **Submitted & Under Review**
+#### **Journal Manuscripts (Under Review)**
 
-- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "Integrated Discovery and State-Aware Servicing for Mobile AUVs in Underwater Networks: Modeling and Performance Analysis." **Submitted to IEEE Transactions on Wireless Communications (TWC)**, 2025.
-- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "Offset Pointing for Energy-efficient Reception in Underwater Optical Wireless Communication: Modeling and Performance Analysis." **Submitted to IEEE Internet of Things Journal (IoTJ)**, 2025.
+- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "[Offset Pointing for Energy-efficient Reception in Underwater Optical Wireless Communication: Modeling and Performance Analysis](https://arxiv.org/abs/2603.10822)." **Submitted to IEEE Internet of Things Journal (IoTJ)**, 2025. [[arXiv]](https://arxiv.org/abs/2603.10822)
+- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "Integrated Discovery and State-Aware Servicing for Mobile AUVs in Underwater Networks: Modeling and Performance Analysis." **Under Review at IEEE Transactions on Mobile Computing (TMC)**, 2025.
 
-#### **Published & Forthcoming**
+#### **Conference Proceedings**
 
-- **Qiyu Ma**, Wanli Ni, and Zhijin Qin. "Large AI Model-Enabled Generative Semantic Communications for Image Transmission." **Accepted for publication at IEEE GlobeCOM**, 2025.
-- **Qiyu Ma** (Chapter Contributor). *Deep Learning Enabled Semantic Communication*, edited by Z. Qin et al., **Wiley**, Forthcoming Nov. 2025.
-- Zhijin Qin, **Qiyu Ma**, and Wanli Ni. "A semantic communication method based on generative AI large model." **China Patent**, 2025.
+- **Qiyu Ma**, Wanli Ni, and Zhijin Qin. "[Large AI Model-Enabled Generative Semantic Communications for Image Transmission](https://arxiv.org/abs/2509.21394)." **Accepted for publication at IEEE Global Communications Conference (Globecom)**, 2025. [[arXiv]](https://arxiv.org/abs/2509.21394)
+
+#### **Books & Patents**
+
+- **Qiyu Ma** (Contributor, **Chapter 7**). *Deep Learning Enabled Semantic Communication*, edited by Z. Qin et al., **Wiley**, 2025. (Published)
+- Zhijin Qin, **Qiyu Ma**, Wanli Ni, and Qiwei Song. "A Semantic Communication Method, Apparatus, Device, and Storage Medium Based on Generative AI Large Models." **China Patent**, No. ZL 2025 1 1141469.1, 2025.
