@@ -1,9 +1,9 @@
 ### **Publications & Manuscripts**
 
-#### **Journal Manuscripts (Under Review)**
+#### **Journal Papers**
 
-- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "[Offset Pointing for Energy-efficient Reception in Underwater Optical Wireless Communication: Modeling and Performance Analysis](https://arxiv.org/abs/2603.10822)." **Accepted by IEEE Internet of Things Journal (IoTJ)**, 2025. [[arXiv]](https://arxiv.org/abs/2603.10822)  [[IEEE Xplore]](https://ieeexplore.ieee.org/document/11433693)
-- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "Integrated Discovery and State-Aware Servicing for Mobile AUVs in Underwater Networks: Modeling and Performance Analysis." **Under Review at IEEE Transactions on Mobile Computing (TMC)**, 2025.
+- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "[Offset Pointing for Energy-Efficient Reception in Underwater Optical Wireless Communication: Modeling and Performance Analysis](https://arxiv.org/abs/2603.10822)." **Published in IEEE Internet of Things Journal (IoT-J)**, vol. 13, no. 11, pp. 24777-24791, 2026. [[arXiv]](https://arxiv.org/abs/2603.10822)  [[IEEE Xplore]](https://ieeexplore.ieee.org/document/11433693)
+- **Qiyu Ma**, Jiajie Xu, and Mohamed-Slim Alouini. "[Integrated Discovery and State-Aware Servicing for Mobile AUVs With UOWC: Modeling and Performance Analysis](https://arxiv.org/abs/2607.15183)." **Accepted by IEEE Transactions on Mobile Computing (TMC)**, 2026. [[arXiv]](https://arxiv.org/abs/2607.15183)
 
 #### **Conference Proceedings**
 
