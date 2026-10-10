@@ -2,7 +2,7 @@ Hi, everyone! I'm **Qiyu (Yusuf) Ma**. I received my B.E. in Electronic Engineer
 
 #### **Contact**
 * **Email**: [ma-qy22@tsinghua.org.cn](mailto:ma-qy22@tsinghua.org.cn)
-* **Location**: KAUST, Thuwal, Saudi Arabia
+* **Location**: Beijing, China
 * **Links**: [Google Scholar](https://scholar.google.com/citations?user=O1e3344AAAAJ&hl=zh-CN) · [ORCID](https://orcid.org/0009-0008-4604-147X) · [GitHub](https://github.com/Yuer-1218) · [IEEE Xplore](https://ieeexplore.ieee.org/author/615105114171058)
 
 #### **Education**
@@ -11,7 +11,7 @@ Hi, everyone! I'm **Qiyu (Yusuf) Ma**. I received my B.E. in Electronic Engineer
     * **Selected Program**: Individualized Education Program "Future Communication," ranked **16/250+**.
 
 #### **Research Experience**
-* **2024.11 - Present**, **Visiting Student**, Communication Theory Lab (CTL), CEMSE, King Abdullah University of Science and Technology (KAUST). Supervised by Prof. Mohamed-Slim Alouini.
+* **2024.11 - Present**, **Visiting Student (Remote)**, Communication Theory Lab (CTL), CEMSE, King Abdullah University of Science and Technology (KAUST). Supervised by Prof. Mohamed-Slim Alouini.
 * **2023.10 - 2026.06**, **Research Assistant**, Innovation Center of Spatial Information Network (Zhijin Qin's Group), Department of EE, Tsinghua University.
 
 #### **Research Interests**
