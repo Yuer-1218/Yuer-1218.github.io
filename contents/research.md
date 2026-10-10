@@ -26,6 +26,7 @@
   </div>
   <div class="research-links">
     <a href="https://arxiv.org/abs/2607.15183" target="_blank" rel="noopener">arXiv</a>
+    <a href="https://ieeexplore.ieee.org/document/11727038" target="_blank" rel="noopener">IEEE Xplore</a>
     <a href="https://github.com/Yuer-1218/SA-OPS" target="_blank" rel="noopener">Code</a>
   </div>
 </div>
@@ -41,6 +42,7 @@
   </div>
   <div class="research-links">
     <a href="https://arxiv.org/abs/2509.21394" target="_blank" rel="noopener">arXiv</a>
+    <a href="https://ieeexplore.ieee.org/document/11432458" target="_blank" rel="noopener">IEEE Xplore</a>
   </div>
 </div>
 
