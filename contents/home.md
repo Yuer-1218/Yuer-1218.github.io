@@ -1,15 +1,18 @@
-Hi, everyone! I'm **Qiyu Ma**, a senior undergraduate student at **Tsinghua University**, majoring in **Electronic Engineering**. My research interests focus on **Generative AI**, **Semantic Communications**, **Underwater Wireless Optical Communication (UWOC)**, and **Stochastic Modeling** for autonomous systems. I am currently seeking PhD opportunities for Fall 2026.
+Hi, everyone! I'm **Qiyu (Yusuf) Ma**. I received my B.E. in Electronic Engineering from **Tsinghua University** in June 2026, and I am currently a **Visiting Student** at the **Communication Theory Lab (CTL)**, King Abdullah University of Science and Technology (KAUST). My research focuses on **Generative AI**, **Semantic Communications**, **Underwater Wireless Optical Communication (UWOC)**, and **Stochastic Modeling** for autonomous systems. I am currently open to industry opportunities.
 
 #### **Contact**
 * **Email**: [ma-qy22@mails.tsinghua.edu.cn](mailto:ma-qy22@mails.tsinghua.edu.cn)
-* **Location**: Zijing Building 1, Haidian District, Beijing
+* **Location**: KAUST, Thuwal, Saudi Arabia
+* **Links**: [Google Scholar](https://scholar.google.com/citations?user=O1e3344AAAAJ&hl=zh-CN) · [ORCID](https://orcid.org/0009-0008-4604-147X) · [GitHub](https://github.com/Yuer-1218) · [IEEE Xplore](https://ieeexplore.ieee.org/author/615105114171058)
 
 #### **Education**
-* **2022 – 2026 (Expected)**, **Tsinghua University**, B.E. in Electronic Engineering.
-    * **GPA**: 3.11/4.00.
+* **2022 - 2026**, **Tsinghua University**, B.E. in Electronic Engineering.
+    * **GPA**: 3.3/4.00.
     * **Selected Program**: Individualized Education Program "Future Communication," ranked **16/250+**.
-* **2023.10 – 2026.06**, **Research Assistant**, Innovation Center of Spatial Information Network (Zhijin Qin's Group), Department of EE, Tsinghua University.
-* **2024.11 – 2026.01**, **Research Internship**, Communication Theory Lab (CTL), CEMSE, King Abdullah University of Science & Technology (KAUST). Supervised by Prof. Mohamed-Slim Alouini.
+
+#### **Research Experience**
+* **2024.11 - Present**, **Visiting Student**, Communication Theory Lab (CTL), CEMSE, King Abdullah University of Science and Technology (KAUST). Supervised by Prof. Mohamed-Slim Alouini.
+* **2023.10 - 2026.06**, **Research Assistant**, Innovation Center of Spatial Information Network (Zhijin Qin's Group), Department of EE, Tsinghua University.
 
 #### **Research Interests**
 * Multi-modal Semantic Communication & Generative AI.
