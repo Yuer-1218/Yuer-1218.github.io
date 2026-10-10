@@ -1,7 +1,7 @@
 Hi, everyone! I'm **Qiyu (Yusuf) Ma**. I received my B.E. in Electronic Engineering from **Tsinghua University** in June 2026, and I am currently a **Visiting Student** at the **Communication Theory Lab (CTL)**, King Abdullah University of Science and Technology (KAUST). My research focuses on **Generative AI**, **Semantic Communications**, **Underwater Wireless Optical Communication (UWOC)**, and **Stochastic Modeling** for autonomous systems. I am currently open to industry opportunities.
 
 #### **Contact**
-* **Email**: [ma-qy22@mails.tsinghua.edu.cn](mailto:ma-qy22@mails.tsinghua.edu.cn)
+* **Email**: [ma-qy22@tsinghua.org.cn](mailto:ma-qy22@tsinghua.org.cn)
 * **Location**: KAUST, Thuwal, Saudi Arabia
 * **Links**: [Google Scholar](https://scholar.google.com/citations?user=O1e3344AAAAJ&hl=zh-CN) · [ORCID](https://orcid.org/0009-0008-4604-147X) · [GitHub](https://github.com/Yuer-1218) · [IEEE Xplore](https://ieeexplore.ieee.org/author/615105114171058)
 
