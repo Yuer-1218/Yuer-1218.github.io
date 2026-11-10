@@ -591,15 +591,32 @@ html[data-theme="dark"] .od-g-peak-line {
 }
 
 .od-win {
-    fill: rgba(112, 30, 94, 0.04);
-    stroke: rgba(112, 30, 94, 0.50);
-    stroke-dasharray: 5 4;
-    stroke-width: 1.6;
+    fill: #d69a2d;
+    stroke: none;
 }
 
-.od-win-edge {
-    stroke: rgba(112, 30, 94, 0.55);
-    stroke-width: 1.1;
+.od-axis-d {
+    stroke: #a06f1c;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+}
+
+.demo-fixed {
+    font-size: 0.84rem;
+    color: #7d8b95;
+    font-weight: 500;
+}
+
+html[data-theme="dark"] .od-win {
+    fill: #e0a63a;
+}
+
+html[data-theme="dark"] .od-axis-d {
+    stroke: #ffcf6a;
+}
+
+html[data-theme="dark"] .demo-fixed {
+    color: #8fa5b3;
 }
 
 .od-node {

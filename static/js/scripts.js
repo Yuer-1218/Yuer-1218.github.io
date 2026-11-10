@@ -14,6 +14,8 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian 阶数',
     lgDensity: '● 节点部署（角度密度 ∝ sin u）',
     lgIntensity: '亮度 ∝ cosᵐ u（光强）',
+    phiFixed: 'φ½ = 60°（固定）',
+    gainNow: '当前 δ 的增益',
     gLabel: '机制：g(u) = cosᵐ(u)·sin(u) 上宽度为 φ½ 的滑动窗口',
     modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。关键假设：节点服从均匀 PPP（体积密度恒定）——对径向积分后单位立体角内密度恒定，折算到每度角度密度 ∝ sinθ（球坐标雅可比），离中心轴越远越密——这正是偏转光轴可以收集到更多节点的原因。',
     fDiscover: '发现节点',
@@ -35,6 +37,8 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian order',
     lgDensity: '● node deployment (per-degree density ∝ sin u)',
     lgIntensity: 'brightness ∝ cosᵐ u (intensity)',
+    phiFixed: 'φ½ = 60° (fixed)',
+    gainNow: 'gain at current δ',
     gLabel: 'Mechanism: width-φ½ window sliding over g(u) = cosᵐ(u)·sin(u)',
     modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. Key assumption: a homogeneous PPP (constant volume density) — after marginalizing over range this gives a constant density per unit solid angle, i.e. per-degree density ∝ sinθ (the spherical Jacobian), so nodes get denser away from the center axis. That is why offsetting the axis can collect more nodes.',
     fDiscover: 'Discover node',
@@ -212,12 +216,10 @@ function initOffsetDemo(host) {
       <svg class="demo-scene" viewBox="0 0 680 360" role="img" aria-label="Schematic: node deployment below the transmitter, light field and a sliding window">
         <g id="od-field"></g>
         <g id="od-dots"></g>
-        <path id="od-win" class="od-win" d=""></path>
-        <line id="od-win-e1" class="od-win-edge" x1="0" y1="0" x2="0" y2="0"></line>
-        <line id="od-win-e2" class="od-win-edge" x1="0" y1="0" x2="0" y2="0"></line>
+        <path id="od-win" class="od-win" d="" fill-opacity="0.1"></path>
+        <line id="od-axis-d" class="od-axis-d" x1="0" y1="0" x2="0" y2="0"></line>
         <g class="od-tick" id="od-rp-ticks"></g>
         <g class="od-label-sm" id="od-rp-ticklabels"></g>
-        <text id="od-win-lab-delta" class="od-delta-label" x="0" y="0"></text>
         <text id="od-win-lab-phi" class="od-label-sm" x="0" y="0"></text>
         <text id="od-lg-density" class="od-label-sm" x="18" y="26"></text>
         <text id="od-lg-intensity" class="od-label-sm" x="662" y="26" text-anchor="end"></text>
@@ -229,7 +231,7 @@ function initOffsetDemo(host) {
         <text x="340" y="22" class="od-label" text-anchor="middle">Tx</text>
       </svg>
       <div class="demo-controls">
-        <label>${DEMO_TEXT.phiHalf} <input id="od-phi" type="range" min="15" max="75" value="60" step="1"><output id="od-phi-out">60°</output></label>
+        <span class="demo-fixed">${DEMO_TEXT.phiFixed}</span>
         <label>${DEMO_TEXT.delta} <input id="od-del" type="range" min="0" max="30" value="0" step="0.5"><output id="od-del-out">0°</output></label>
       </div>
       <svg class="demo-plot" viewBox="0 0 680 190" role="img" aria-label="Density, intensity and their product with a sliding window">
@@ -284,7 +286,7 @@ function initOffsetDemo(host) {
     </div>`;
 
     const $ = id => host.querySelector('#' + id);
-    const phiIn = $('od-phi'), delIn = $('od-del');
+    const delIn = $('od-del');
 
     // Paper Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), m = −ln2/ln cos(φ½)
     function lambertOrder(phiHalfDeg) {
@@ -360,15 +362,17 @@ function initOffsetDemo(host) {
         const RW = RMAX + 8;
         const w1 = pt(d1, RW), w2 = pt(d2, RW);
         $('od-win').setAttribute('d', `M ${TXP.x} ${TXP.y} L ${w1[0].toFixed(1)} ${w1[1].toFixed(1)} A ${RW} ${RW} 0 0 1 ${w2[0].toFixed(1)} ${w2[1].toFixed(1)} Z`);
-        const e1 = pt(d1, RW + 10), e2 = pt(d2, RW + 10);
-        $('od-win-e1').setAttribute('x1', TXP.x); $('od-win-e1').setAttribute('y1', TXP.y);
-        $('od-win-e1').setAttribute('x2', e1[0].toFixed(1)); $('od-win-e1').setAttribute('y2', e1[1].toFixed(1));
-        $('od-win-e2').setAttribute('x1', TXP.x); $('od-win-e2').setAttribute('y1', TXP.y);
-        $('od-win-e2').setAttribute('x2', e2[0].toFixed(1)); $('od-win-e2').setAttribute('y2', e2[1].toFixed(1));
-        const dl = pt(d1, RW - 42);
-        $('od-win-lab-delta').setAttribute('x', dl[0].toFixed(1));
-        $('od-win-lab-delta').setAttribute('y', dl[1].toFixed(1));
-        $('od-win-lab-delta').textContent = 'δ';
+        // band brightness reflects the power collected at the current δ
+        const pmax = optimum(phiHalfDeg).P || 1;
+        const p0 = power(phiHalfDeg, 0);
+        const t = (power(phiHalfDeg, deltaDeg) - p0) / ((pmax - p0) || 1);
+        $('od-win').setAttribute('fill-opacity', (0.10 + 0.32 * Math.max(0, Math.min(1, t))).toFixed(3));
+        // current Tx optical axis (tilted by δ)
+        const ax = pt(d1, RW + 12);
+        $('od-axis-d').setAttribute('x1', TXP.x);
+        $('od-axis-d').setAttribute('y1', TXP.y);
+        $('od-axis-d').setAttribute('x2', ax[0].toFixed(1));
+        $('od-axis-d').setAttribute('y2', ax[1].toFixed(1));
         const pl = pt(d1 + (d2 - d1) / 2, RW - 26);
         $('od-win-lab-phi').setAttribute('x', pl[0].toFixed(1));
         $('od-win-lab-phi').setAttribute('y', pl[1].toFixed(1));
@@ -462,25 +466,22 @@ function initOffsetDemo(host) {
     }
 
     function update() {
-        const phiHalf = +phiIn.value;
-        const maxD = 90 - phiHalf;
-        delIn.setAttribute('max', maxD.toFixed(1));
-        if (+delIn.value > maxD) delIn.value = maxD.toFixed(1);
+        const phiHalf = 60; // fixed half-power angle
         const delta = +delIn.value;
-        $('od-phi-out').textContent = phiHalf + '°';
         $('od-del-out').textContent = delta.toFixed(1) + '°';
         drawRadial(phiHalf, delta);
         drawG(phiHalf, delta);
         const { opt, cur, base } = drawPlot(phiHalf, delta);
         const m = lambertOrder(phiHalf);
         const gain = base > 0 ? (opt.P - base) / base * 100 : 0;
+        const gainNow = base > 0 ? (cur - base) / base * 100 : 0;
         $('od-stats').innerHTML = `
           <div class="stat"><span class="stat-k">${DEMO_TEXT.mOrder}</span><span class="stat-v">m = ${m.toFixed(2)}</span></div>
           <div class="stat"><span class="stat-k">${DEMO_TEXT.deltaOpt}</span><span class="stat-v">${opt.delta.toFixed(1)}°</span></div>
-          <div class="stat stat-gain"><span class="stat-k">${DEMO_TEXT.gain}</span><span class="stat-v">+${gain.toFixed(1)}%</span></div>`;
+          <div class="stat stat-gain"><span class="stat-k">${DEMO_TEXT.gainNow}</span><span class="stat-v">+${gainNow.toFixed(1)}%</span></div>
+          <div class="stat"><span class="stat-k">${DEMO_TEXT.gain}</span><span class="stat-v">+${gain.toFixed(1)}%</span></div>`;
     }
 
-    phiIn.addEventListener('input', update);
     delIn.addEventListener('input', update);
     update();
 }
