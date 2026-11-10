@@ -186,6 +186,7 @@
                 <a id="github-link" href="https://github.com/Yuer-1218">Github</a>
                 <span class="mx-1">&middot;</span>
                 <a id="license-link" href="https://github.com/Yuer-1218/Yuer-1218.github.io/blob/main/LICENSE">License</a>
+                <div id="visit-total" class="mt-1"></div>
             </div>
         </div>
     </footer>
@@ -193,6 +194,16 @@
     <!-- GoatCounter analytics (invisible to visitors) -->
     <script data-goatcounter="https://yuer.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
+    <script>
+      // Public visitor counter (site-wide total); renders only if the count is available.
+      fetch('https://yuer.goatcounter.com/counter/TOTAL.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d || d.count === undefined) return;
+          document.getElementById('visit-total').textContent = (d.count || '0') + ' visits';
+        })
+        .catch(function () {});
+    </script>
 
 </body>
 
