@@ -1173,3 +1173,102 @@ html[data-theme="dark"] .demo-controls input[type=range] {
 }
 
 
+
+/* ---------- Offset demo v6: fixed-radius arc + density ribbon ---------- */
+.od-sphere {
+    fill: none;
+    stroke: rgba(0, 0, 0, 0.28);
+    stroke-width: 1.6;
+}
+
+.od-ribbon-band {
+    fill: rgba(112, 30, 94, 0.10);
+    stroke: rgba(112, 30, 94, 0.22);
+    stroke-width: 1;
+}
+
+.od-band-glow {
+    fill: none;
+    stroke: #d69a2d;
+    stroke-width: 16;
+    stroke-linecap: round;
+    stroke-opacity: 0.14;
+}
+
+.od-band {
+    fill: none;
+    stroke: #b07615;
+    stroke-width: 6.5;
+    stroke-linecap: round;
+    stroke-opacity: 0.6;
+}
+
+.od-delta-arc-sm {
+    fill: none;
+    stroke: #c2185b;
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+}
+
+.od-delta-lab {
+    font-size: 12px;
+    fill: #c2185b;
+    font-weight: 600;
+}
+
+.od-label-band {
+    font-size: 11px;
+    fill: #8a5a10;
+    font-weight: 600;
+}
+
+.od-d-lab {
+    font-style: italic;
+}
+
+.od-base-line {
+    stroke: rgba(0, 0, 0, 0.28);
+    stroke-dasharray: 2 4;
+    stroke-width: 1;
+}
+
+html[data-theme="dark"] .od-sphere {
+    stroke: rgba(255, 255, 255, 0.28);
+}
+
+html[data-theme="dark"] .od-ribbon-band {
+    fill: rgba(217, 168, 207, 0.10);
+    stroke: rgba(217, 168, 207, 0.22);
+}
+
+html[data-theme="dark"] .od-band-glow {
+    stroke: #e0a63a;
+}
+
+html[data-theme="dark"] .od-band {
+    stroke: #e0a63a;
+}
+
+html[data-theme="dark"] .od-label-band {
+    fill: #ffe2a8;
+}
+
+html[data-theme="dark"] .od-base-line {
+    stroke: rgba(255, 255, 255, 0.28);
+}
+
+html[data-theme="dark"] .od-axis {
+    stroke: rgba(255, 255, 255, 0.22);
+}
+
+html[data-theme="dark"] .od-label-sm {
+    fill: #9fb2c0;
+}
+
+html[data-theme="dark"] .od-label {
+    fill: #9fb2c0;
+}
+
+html[data-theme="dark"] .od-tick line {
+    stroke: rgba(255, 255, 255, 0.30);
+}

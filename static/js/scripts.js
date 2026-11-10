@@ -12,13 +12,17 @@ const DEMO_TEXT = LANG === 'zh' ? {
     deltaOpt: '最优偏角 δ_opt',
     gain: '相对完美对准的增益',
     mOrder: 'Lambertian 阶数',
-    lgDensity: '● 节点部署（角度密度 ∝ sin u）',
-    lgIntensity: '亮度 ∝ cosᵐ u（光强）',
+    lgDensity: '● 每个点 = 一个节点（全部位于半径 d 的球面）',
+    lgDensity2: '弧带厚度 ∝ 每度节点数 ∝ sin u',
+    lgIntensity: '亮度 ∝ cosᵐ u（每节点接收光强）',
+    lgBand: '采集弧段：宽度 φ½，相对光轴偏移 δ',
     phiFixed: 'φ½ = 45°（固定）',
     gainNow: '当前 δ 的增益',
-    winLabel: '采集窗口（φ½）',
-    gLabel: '机制：g(u) = cosᵐ(u)·sin(u) 上宽度为 φ½ 的滑动窗口',
-    modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。关键假设：节点服从均匀 PPP（体积密度恒定）——对径向积分后单位立体角内密度恒定，折算到每度角度密度 ∝ sinθ（球坐标雅可比），离中心轴越远越密——这正是偏转光轴可以收集到更多节点的原因。',
+    winLabel: '采集角 φ½',
+    axisLabel: '光轴',
+    dLabel: '半径 d（固定）',
+    statNodes: '采集段内节点',
+    modelNote: '半球截面示意：所有节点都位于同一半径 d 的球面上（对应式 (33) 中链路距离 L 为固定参数）。节点位置在立体角上均匀 ⇒ 每度节点数 ∝ sin u（u 为相对光轴的张角；球面上角度 u 处的环带面积 ∝ sin u），因此离光轴越远节点越密。每节点接收光强 ∝ cosᵐ u，故单位角度的贡献 g(u) = cosᵐ u · sin u 在 u* = arctan(1/√m) 处最大。采集角宽度固定为 φ½、相对光轴偏移 δ 时，采集弧段为 [δ, δ+φ½]；对 g(u) 在该区间积分，即得论文式 (33)：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)。',
     fDiscover: '发现节点',
     fEnergy: '读取能量状态',
     fPre: '预充电',
@@ -36,13 +40,17 @@ const DEMO_TEXT = LANG === 'zh' ? {
     deltaOpt: 'Optimal offset δ_opt',
     gain: 'Gain vs perfect alignment',
     mOrder: 'Lambertian order',
-    lgDensity: '● node deployment (per-degree density ∝ sin u)',
-    lgIntensity: 'brightness ∝ cosᵐ u (intensity)',
+    lgDensity: '● each dot = one node (all on the sphere of radius d)',
+    lgDensity2: 'ribbon thickness ∝ nodes per degree ∝ sin u',
+    lgIntensity: 'brightness ∝ cosᵐ u (per-node intensity)',
+    lgBand: 'collected arc: width φ½, offset δ from the optical axis',
     phiFixed: 'φ½ = 45° (fixed)',
     gainNow: 'gain at current δ',
-    winLabel: 'collection window (φ½)',
-    gLabel: 'Mechanism: width-φ½ window sliding over g(u) = cosᵐ(u)·sin(u)',
-    modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. Key assumption: a homogeneous PPP (constant volume density) — after marginalizing over range this gives a constant density per unit solid angle, i.e. per-degree density ∝ sinθ (the spherical Jacobian), so nodes get denser away from the center axis. That is why offsetting the axis can collect more nodes.',
+    winLabel: 'collection angle φ½',
+    axisLabel: 'optical axis',
+    dLabel: 'radius d (fixed)',
+    statNodes: 'nodes in collected arc',
+    modelNote: 'Hemisphere cross-section: every node lies on the same sphere of radius d (the link distance L is a fixed parameter in Eq. (33)). Node positions are uniform in solid angle, so the per-degree node count is ∝ sin u (u is the angle from the optical axis; a spherical ring at angle u has area ∝ sin u) — nodes are denser away from the axis. Each node receives intensity ∝ cosᵐ u, so the contribution per unit angle, g(u) = cosᵐ u · sin u, peaks at u* = arctan(1/√m). With the collection width fixed at φ½ and an offset δ from the optical axis, the collected arc is [δ, δ+φ½]; integrating g(u) over it gives Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½) with m = −ln2 / ln cos(φ½).',
     fDiscover: 'Discover node',
     fEnergy: 'Read energy state',
     fPre: 'Preemptive charging',
@@ -211,21 +219,28 @@ function svgEl(tag, attrs) {
 
 /* ---------------- Offset pointing demo — paper Eq. (33) ---------------- */
 function initOffsetDemo(host) {
-    // (radial schematic geometry lives in drawRadial; see TXP/RMAX below)
-
     host.innerHTML = `
     <div class="demo-panel">
-      <svg class="demo-scene" viewBox="0 0 680 360" role="img" aria-label="Schematic: node deployment below the transmitter, light field and a sliding window">
+      <svg class="demo-scene" viewBox="0 0 680 320" role="img" aria-label="Hemisphere cross-section: nodes on a sphere of fixed radius d, the light field, and the collected angular arc">
         <g id="od-field"></g>
+        <g id="od-ribbon"></g>
+        <path id="od-sphere" class="od-sphere" d=""></path>
+        <g class="od-tick" id="od-ticks"></g>
+        <g id="od-ticklabels"></g>
+        <path id="od-band-glow" class="od-band-glow" d=""></path>
+        <path id="od-band" class="od-band" d=""></path>
         <g id="od-dots"></g>
-        <path id="od-win" class="od-win" d="" fill-opacity="0.1"></path>
-        <line id="od-axis-d" class="od-axis-d" x1="0" y1="0" x2="0" y2="0"></line>
-        <g class="od-tick" id="od-rp-ticks"></g>
-        <g class="od-label-sm" id="od-rp-ticklabels"></g>
-        <text id="od-win-lab-phi" class="od-label-sm" x="0" y="0"></text>
-        <text id="od-win-lab-p" class="od-label-sm" x="0" y="0"></text>
-        <text id="od-lg-density" class="od-label-sm" x="18" y="26"></text>
-        <text id="od-lg-intensity" class="od-label-sm" x="662" y="26" text-anchor="end"></text>
+        <path id="od-delta-arc" class="od-delta-arc-sm" d=""></path>
+        <text id="od-delta-lab" class="od-delta-lab" x="0" y="0" text-anchor="middle"></text>
+        <text id="od-win-lab-phi" class="od-label-band" x="0" y="0" text-anchor="middle"></text>
+        <text id="od-win-lab-p" class="od-label-band" x="0" y="0" text-anchor="middle"></text>
+        <line class="od-axis" x1="340" y1="46" x2="340" y2="276"></line>
+        <text class="od-label-sm" x="350" y="70">${DEMO_TEXT.axisLabel}</text>
+        <text class="od-label-sm od-d-lab" x="332" y="215" text-anchor="middle" transform="rotate(-90 332 215)">${DEMO_TEXT.dLabel}</text>
+        <text id="od-lg-density" class="od-label-sm" x="18" y="18"></text>
+        <text id="od-lg-density2" class="od-label-sm" x="18" y="34"></text>
+        <text id="od-lg-intensity" class="od-label-sm" x="662" y="18" text-anchor="end"></text>
+        <text id="od-lg-band" class="od-label-sm" x="662" y="34" text-anchor="end"></text>
         <g class="od-tx">
           <circle cx="340" cy="46" r="6" class="od-tx-dot"></circle>
           <circle cx="340" cy="46" r="11" class="od-tx-ring"></circle>
@@ -237,23 +252,25 @@ function initOffsetDemo(host) {
         <span class="demo-fixed">${DEMO_TEXT.phiFixed}</span>
         <label>${DEMO_TEXT.delta} <input id="od-del" type="range" min="0" max="45" value="0" step="0.5"><output id="od-del-out">0°</output></label>
       </div>
-      <svg class="demo-plot" viewBox="0 0 680 150" role="img" aria-label="Normalized received power versus offset">
+      <svg class="demo-plot" viewBox="0 0 680 150" role="img" aria-label="Received power relative to perfect alignment, versus pointing offset">
         <line class="od-plot-axis" x1="70" y1="122" x2="648" y2="122"></line>
         <line class="od-plot-axis" x1="70" y1="16" x2="70" y2="122"></line>
         <text class="od-plot-tick" x="70" y="142" text-anchor="middle">0°</text>
         <text class="od-plot-tick" id="od-tick-mid" x="360" y="142" text-anchor="middle"></text>
         <text class="od-plot-tick" id="od-tick-end" x="640" y="142" text-anchor="middle"></text>
-        <text class="od-plot-tick" x="58" y="20" text-anchor="end">1</text>
-        <text class="od-plot-tick" x="58" y="72" text-anchor="end">.5</text>
-        <text class="od-plot-tick" x="58" y="126" text-anchor="end">0</text>
+        <text class="od-plot-tick" x="62" y="20" text-anchor="end">1.25</text>
+        <text class="od-plot-tick" x="62" y="55" text-anchor="end">1.00</text>
+        <text class="od-plot-tick" x="62" y="91" text-anchor="end">0.75</text>
+        <text class="od-plot-tick" x="62" y="126" text-anchor="end">0.50</text>
+        <text class="od-plot-tick" x="70" y="10" text-anchor="start">P(δ) / P(0)</text>
         <path id="od-curve-fill" class="od-curve-fill" d=""></path>
         <polyline id="od-curve" class="od-curve" points=""></polyline>
+        <line id="od-base-line" class="od-base-line" x1="70" y1="51" x2="648" y2="51"></line>
         <line id="od-opt-line" class="od-opt-line" x1="0" y1="16" x2="0" y2="122"></line>
         <circle id="od-opt-dot" class="od-opt-dot" r="4.5" cx="0" cy="0"></circle>
         <text id="od-opt-label" class="od-label-opt" x="0" y="0"></text>
         <line id="od-del-line" class="od-del-line" x1="0" y1="16" x2="0" y2="122"></line>
         <circle id="od-del-dot" class="od-del-dot" r="4.5" cx="0" cy="0"></circle>
-        <circle id="od-base-dot" class="od-base-dot" r="3.5" cx="0" cy="0"></circle>
       </svg>
       <div class="demo-stats" id="od-stats"></div>
       <div class="demo-caption">${DEMO_TEXT.modelNote}</div>
@@ -261,7 +278,11 @@ function initOffsetDemo(host) {
 
     const $ = id => host.querySelector('#' + id);
     const delIn = $('od-del');
-    const dotEls = []; // { el, ang } for window highlighting
+    const dotEls = [];
+    const TXP = { x: 340, y: 46 };
+    const D = 230;          // fixed link distance d (schematic pixels)
+    const f1 = v => v.toFixed(1);
+    const pt = (deg, r) => [TXP.x + r * Math.sin(deg * Math.PI / 180), TXP.y + r * Math.cos(deg * Math.PI / 180)];
 
     // Paper Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), m = −ln2/ln cos(φ½)
     function lambertOrder(phiHalfDeg) {
@@ -284,147 +305,168 @@ function initOffsetDemo(host) {
         return { delta: best, P: bestP };
     }
 
-    function drawRadial(phiHalfDeg, deltaDeg) {
+    // ---- static layer: light field, density ribbon, sphere arc, ticks, nodes ----
+    function buildStatic(phiHalfDeg) {
         const m = lambertOrder(phiHalfDeg);
-        const TXP = { x: 340, y: 46 };
-        const RMAX = 250;
-        const pt = (deg, r) => [TXP.x + r * Math.sin(deg * Math.PI / 180), TXP.y + r * Math.cos(deg * Math.PI / 180)];
-        // light field: brightness ∝ cos^m(θ), θ measured from the vertical (downward) axis
+        // light field: brightness ∝ cos^m(u), fixed along the optical axis
         const field = $('od-field');
-        field.innerHTML = '';
         const step = 2;
         for (let a = -90; a < 90; a += step) {
             const mid = a + step / 2;
-            const alpha = 0.30 * Math.pow(Math.max(0, Math.cos(Math.abs(mid) * Math.PI / 180)), m);
+            const alpha = 0.32 * Math.pow(Math.max(0, Math.cos(Math.abs(mid) * Math.PI / 180)), m);
             if (alpha < 0.004) continue;
-            const p1 = pt(a, RMAX), p2 = pt(a + step, RMAX);
+            const p1 = pt(a, D), p2 = pt(a + step, D);
             field.appendChild(svgEl('path', {
-                d: `M ${TXP.x} ${TXP.y} L ${p1[0].toFixed(1)} ${p1[1].toFixed(1)} A ${RMAX} ${RMAX} 0 0 1 ${p2[0].toFixed(1)} ${p2[1].toFixed(1)} Z`,
+                d: `M ${TXP.x} ${TXP.y} L ${f1(p1[0])} ${f1(p1[1])} A ${D} ${D} 0 0 1 ${f1(p2[0])} ${f1(p2[1])} Z`,
                 class: 'od-field-w',
                 opacity: alpha.toFixed(3)
             }));
         }
-        // fixed node deployment (independent of φ½ and δ): per-degree density ∝ sinθ
-        const dotsG = $('od-dots');
-        if (!dotsG.dataset.built) {
-            dotsG.dataset.built = '1';
-            let seed = 421;
-            const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
-            for (let i = 0; i < 72; i++) {
-                const th = Math.acos(1 - rnd()) * 180 / Math.PI; // ∝ sinθ over [0°, 90°]
-                const sign = rnd() < 0.5 ? -1 : 1;
-                const rr = 40 + rnd() * (RMAX - 56);
-                const q = pt(sign * th, rr);
-                const el = svgEl('circle', {
-                    cx: q[0].toFixed(1), cy: q[1].toFixed(1),
-                    r: (1.6 + rnd() * 1.7).toFixed(1),
-                    class: 'od-node', opacity: (0.40 + rnd() * 0.45).toFixed(2)
-                });
-                dotsG.appendChild(el);
-                dotEls.push({ el, ang: sign * th });
+        // density ribbon hugging the arc: radial thickness ∝ per-degree node count ∝ sin u
+        const W = 24;
+        const ribbon = $('od-ribbon');
+        [1, -1].forEach(sign => {
+            const start = pt(0, D);
+            let dd = `M ${f1(start[0])} ${f1(start[1])}`;
+            for (let a = 2; a <= 90; a += 2) { const q = pt(sign * a, D); dd += ` L ${f1(q[0])} ${f1(q[1])}`; }
+            for (let a = 90; a >= 0; a -= 2) {
+                const q = pt(sign * a, D - W * Math.sin(a * Math.PI / 180));
+                dd += ` L ${f1(q[0])} ${f1(q[1])}`;
             }
-            // ticks every 30° across the 180° half-plane
-            const ticks = $('od-rp-ticks'), labs = $('od-rp-ticklabels');
-            for (let a = -90; a <= 90; a += 30) {
-                const t1 = pt(a, RMAX + 6), t2 = pt(a, RMAX + 14);
-                ticks.appendChild(svgEl('line', { x1: t1[0].toFixed(1), y1: t1[1].toFixed(1), x2: t2[0].toFixed(1), y2: t2[1].toFixed(1) }));
-                const lq = pt(a, RMAX + 28);
-                const t = svgEl('text', { x: lq[0].toFixed(1), y: (lq[1] + 4).toFixed(1), 'text-anchor': 'middle' });
-                t.textContent = (a === 0 ? '0°' : (a > 0 ? '+' : '') + a + '°');
-                labs.appendChild(t);
-            }
-        }
-        // collection window [δ, δ+φ½] — an annular sector of the deployment region
-        const d1 = deltaDeg, d2 = Math.min(90, deltaDeg + phiHalfDeg);
-        const RIN = 48;
-        const A1 = pt(d1, RIN), A2 = pt(d2, RIN), B1 = pt(d1, RMAX), B2 = pt(d2, RMAX);
-        $('od-win').setAttribute('d', `M ${A1[0].toFixed(1)} ${A1[1].toFixed(1)} A ${RIN} ${RIN} 0 0 1 ${A2[0].toFixed(1)} ${A2[1].toFixed(1)} L ${B2[0].toFixed(1)} ${B2[1].toFixed(1)} A ${RMAX} ${RMAX} 0 0 0 ${B1[0].toFixed(1)} ${B1[1].toFixed(1)} Z`);
-        // band brightness reflects the power collected at the current δ
-        const pmax = optimum(phiHalfDeg).P || 1;
-        const p0 = power(phiHalfDeg, 0) || 1;
-        const t = (power(phiHalfDeg, deltaDeg) - p0) / ((pmax - p0) || 1);
-        $('od-win').setAttribute('fill-opacity', (0.10 + 0.32 * Math.max(0, Math.min(1, t))).toFixed(3));
-        // current Tx optical axis (tilted by δ)
-        const ax = pt(d1, RMAX + 10);
-        $('od-axis-d').setAttribute('x1', TXP.x);
-        $('od-axis-d').setAttribute('y1', TXP.y);
-        $('od-axis-d').setAttribute('x2', ax[0].toFixed(1));
-        $('od-axis-d').setAttribute('y2', ax[1].toFixed(1));
-        // highlight the nodes captured by the window
-        dotEls.forEach(({ el, ang }) => {
-            const inW = ang >= d1 - 0.1 && ang <= d2 + 0.1;
-            el.classList.toggle('in-win', inW);
-            el.setAttribute('opacity', inW ? '0.95' : '0.30');
+            ribbon.appendChild(svgEl('path', { d: dd + ' Z', class: 'od-ribbon-band' }));
         });
-        const midA = d1 + (d2 - d1) / 2;
-        const pl = pt(midA, RMAX - 18);
-        $('od-win-lab-phi').setAttribute('x', pl[0].toFixed(1));
-        $('od-win-lab-phi').setAttribute('y', pl[1].toFixed(1));
-        $('od-win-lab-phi').textContent = DEMO_TEXT.winLabel;
-        const pq = pt(midA, RMAX - 56);
-        $('od-win-lab-p').setAttribute('x', pq[0].toFixed(1));
-        $('od-win-lab-p').setAttribute('y', pq[1].toFixed(1));
-        $('od-win-lab-p').textContent = 'P = ' + Math.round(100 * power(phiHalfDeg, deltaDeg) / p0) + '%';
+        // the sphere of nodes: a hemisphere of fixed radius d
+        const a1 = pt(-90, D), a2 = pt(90, D);
+        $('od-sphere').setAttribute('d', `M ${f1(a1[0])} ${f1(a1[1])} A ${D} ${D} 0 0 1 ${f1(a2[0])} ${f1(a2[1])}`);
+        // angle ticks every 30°
+        const ticks = $('od-ticks'), labels = $('od-ticklabels');
+        for (let a = -90; a <= 90; a += 30) {
+            const t1 = pt(a, D + 6), t2 = pt(a, D + 13);
+            ticks.appendChild(svgEl('line', { x1: f1(t1[0]), y1: f1(t1[1]), x2: f1(t2[0]), y2: f1(t2[1]) }));
+            const lq = pt(a, D + 27);
+            const t = svgEl('text', { x: f1(lq[0]), y: f1(lq[1] + 4), 'text-anchor': 'middle', class: 'od-plot-tick' });
+            t.textContent = (a === 0 ? '0°' : (a > 0 ? '+' : '−') + Math.abs(a) + '°');
+            labels.appendChild(t);
+        }
+        // nodes: one dot per node, all at radius d; uniform in solid angle ⇒ per-degree density ∝ sin u
+        const dotsG = $('od-dots');
+        let seed = 421;
+        const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+        for (let i = 0; i < 96; i++) {
+            const th = Math.acos(1 - rnd()) * 180 / Math.PI; // density ∝ sinθ over [0°, 90°]
+            const sign = rnd() < 0.5 ? -1 : 1;
+            const q = pt(sign * th, D);
+            const el = svgEl('circle', {
+                cx: f1(q[0]), cy: f1(q[1]),
+                r: (2.0 + rnd() * 1.4).toFixed(1),
+                class: 'od-node', opacity: '0.40'
+            });
+            dotsG.appendChild(el);
+            dotEls.push({ el, ang: sign * th });
+        }
         $('od-lg-density').textContent = DEMO_TEXT.lgDensity;
+        $('od-lg-density2').textContent = DEMO_TEXT.lgDensity2;
         $('od-lg-intensity').textContent = DEMO_TEXT.lgIntensity;
+        $('od-lg-band').textContent = DEMO_TEXT.lgBand;
     }
 
     function drawPlot(phiHalfDeg, deltaDeg) {
         const opt = optimum(phiHalfDeg);
         const maxD = 90 - phiHalfDeg;
-        const pmax = opt.P || 1;
+        const p0 = power(phiHalfDeg, 0) || 1;
+        const yMin = 0.50, yMax = 1.25;
         const x0 = 70, x1 = 648, y0 = 16, y1 = 122;
         const P2x = d => x0 + (d / maxD) * (x1 - x0);
-        const P2y = p => y1 - Math.max(0, p / pmax) * (y1 - y0);
+        const P2y = v => y1 - (Math.max(yMin, Math.min(yMax, v)) - yMin) / (yMax - yMin) * (y1 - y0);
         let pts = [], area = [`M ${x0} ${y1}`];
-        for (let d = 0; d <= maxD + 1e-9; d += maxD / 90) {
-            const p = power(phiHalfDeg, d);
-            const X = P2x(d), Y = P2y(p);
-            pts.push(X.toFixed(1) + ',' + Y.toFixed(1));
-            area.push(`${X.toFixed(1)} ${Y.toFixed(1)}`);
+        for (let d = 0; d <= maxD + 1e-9; d += maxD / 120) {
+            const v = power(phiHalfDeg, d) / p0;
+            const X = P2x(d), Y = P2y(v);
+            pts.push(f1(X) + ',' + f1(Y));
+            area.push(`${f1(X)} ${f1(Y)}`);
         }
         area.push(`${x1} ${y1}`, 'Z');
         $('od-curve').setAttribute('points', pts.join(' '));
         $('od-curve-fill').setAttribute('d', area.join(' '));
-        const ox = P2x(opt.delta), oy = P2y(pmax);
+        // δ = 0 reference line
+        $('od-base-line').setAttribute('y1', f1(P2y(1)));
+        $('od-base-line').setAttribute('y2', f1(P2y(1)));
+        const ox = P2x(opt.delta), oy = P2y(opt.P / p0);
         $('od-opt-line').setAttribute('x1', ox);
         $('od-opt-line').setAttribute('x2', ox);
         $('od-opt-dot').setAttribute('cx', ox);
         $('od-opt-dot').setAttribute('cy', oy);
         const optLab = $('od-opt-label');
-        optLab.setAttribute('x', Math.min(ox + 6, x1 - 90));
+        optLab.setAttribute('x', Math.min(ox + 10, x1 - 130));
         optLab.setAttribute('y', Math.max(oy - 8, 26));
-        optLab.textContent = 'δ_opt = ' + opt.delta.toFixed(1) + '°';
-        const cp = power(phiHalfDeg, deltaDeg);
-        const cx = P2x(deltaDeg), cy = P2y(cp);
+        optLab.textContent = 'δ_opt = ' + opt.delta.toFixed(1) + '° (+' + ((opt.P / p0 - 1) * 100).toFixed(1) + '%)';
+        const cx = P2x(deltaDeg), cy = P2y(power(phiHalfDeg, deltaDeg) / p0);
         $('od-del-line').setAttribute('x1', cx);
         $('od-del-line').setAttribute('x2', cx);
         $('od-del-dot').setAttribute('cx', cx);
         $('od-del-dot').setAttribute('cy', cy);
-        const bp = power(phiHalfDeg, 0);
-        $('od-base-dot').setAttribute('cx', x0);
-        $('od-base-dot').setAttribute('cy', P2y(bp));
-        $('od-tick-mid').textContent = (maxD / 2).toFixed(0) + '°';
+        $('od-tick-mid').textContent = (maxD / 2).toFixed(1) + '°';
         $('od-tick-end').textContent = maxD.toFixed(0) + '°';
-        return { opt, cur: cp, base: bp };
     }
 
     function update() {
         const phiHalf = 45; // fixed half-power angle
         const delta = +delIn.value;
         $('od-del-out').textContent = delta.toFixed(1) + '°';
-        drawRadial(phiHalf, delta);
-        const { opt, cur, base } = drawPlot(phiHalf, delta);
         const m = lambertOrder(phiHalf);
-        const gain = base > 0 ? (opt.P - base) / base * 100 : 0;
-        const gainNow = base > 0 ? (cur - base) / base * 100 : 0;
+        const p0 = power(phiHalf, 0) || 1;
+        const d1 = delta, d2 = Math.min(90, delta + phiHalf);
+        // the collected arc [δ, δ+φ½] on the sphere of nodes
+        const A = pt(d1, D), B = pt(d2, D);
+        const bandPath = `M ${f1(A[0])} ${f1(A[1])} A ${D} ${D} 0 0 1 ${f1(B[0])} ${f1(B[1])}`;
+        $('od-band').setAttribute('d', bandPath);
+        $('od-band-glow').setAttribute('d', bandPath);
+        const pmax = optimum(phiHalf).P || 1;
+        const t = Math.max(0, Math.min(1, (power(phiHalf, delta) - p0) / ((pmax - p0) || 1)));
+        $('od-band').setAttribute('stroke-opacity', (0.55 + 0.40 * t).toFixed(3));
+        $('od-band-glow').setAttribute('stroke-opacity', (0.10 + 0.22 * t).toFixed(3));
+        // δ marker close to the Tx
+        const da = pt(0, 80), db = pt(Math.max(delta, 0.01), 80);
+        $('od-delta-arc').setAttribute('d', delta > 0.5 ? `M ${f1(da[0])} ${f1(da[1])} A 80 80 0 0 1 ${f1(db[0])} ${f1(db[1])}` : '');
+        const dl = pt(delta / 2, 99);
+        $('od-delta-lab').setAttribute('x', f1(dl[0]));
+        $('od-delta-lab').setAttribute('y', f1(dl[1]));
+        $('od-delta-lab').textContent = delta > 4 ? 'δ' : '';
+        // labels on the collected arc
+        const midA = d1 + (d2 - d1) / 2;
+        const pl = pt(midA, D - 32);
+        $('od-win-lab-phi').setAttribute('x', f1(pl[0]));
+        $('od-win-lab-phi').setAttribute('y', f1(pl[1]));
+        $('od-win-lab-phi').textContent = DEMO_TEXT.winLabel;
+        const pq = pt(midA, D - 60);
+        $('od-win-lab-p').setAttribute('x', f1(pq[0]));
+        $('od-win-lab-p').setAttribute('y', f1(pq[1]));
+        $('od-win-lab-p').textContent = 'P = ' + Math.round(100 * power(phiHalf, delta) / p0) + '% · P(0)';
+        // highlight the nodes inside the collected arc
+        let inBand = 0, rightTotal = 0;
+        dotEls.forEach(({ el, ang }) => {
+            const isIn = ang >= d1 - 0.25 && ang <= d2 + 0.25;
+            el.classList.toggle('in-win', isIn);
+            el.setAttribute('opacity', isIn ? '1' : '0.40');
+            if (isIn) inBand++;
+            if (ang >= 0) rightTotal++;
+        });
+        drawPlot(phiHalf, delta);
+        const opt = optimum(phiHalf);
+        const gain = (opt.P - p0) / p0 * 100;
+        const gainNow = (power(phiHalf, delta) - p0) / p0 * 100;
+        const sgn = v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
         $('od-stats').innerHTML = `
           <div class="stat"><span class="stat-k">${DEMO_TEXT.mOrder}</span><span class="stat-v">m = ${m.toFixed(2)}</span></div>
           <div class="stat"><span class="stat-k">${DEMO_TEXT.deltaOpt}</span><span class="stat-v">${opt.delta.toFixed(1)}°</span></div>
-          <div class="stat stat-gain"><span class="stat-k">${DEMO_TEXT.gainNow}</span><span class="stat-v">+${gainNow.toFixed(1)}%</span></div>
-          <div class="stat"><span class="stat-k">${DEMO_TEXT.gain}</span><span class="stat-v">+${gain.toFixed(1)}%</span></div>`;
+          <div class="stat stat-gain"><span class="stat-k">${DEMO_TEXT.gainNow}</span><span class="stat-v">${sgn(gainNow)}</span></div>
+          <div class="stat"><span class="stat-k">${DEMO_TEXT.gain}</span><span class="stat-v">${sgn(gain)}</span></div>
+          <div class="stat"><span class="stat-k">${DEMO_TEXT.statNodes}</span><span class="stat-v">${inBand} / ${rightTotal}</span></div>`;
     }
 
+    buildStatic(45);
+    const odStart = Math.max(0, Math.min(45, +(new URLSearchParams(location.search).get('od') || 0)));
+    if (odStart) delIn.value = String(odStart);
     delIn.addEventListener('input', update);
     update();
 }
