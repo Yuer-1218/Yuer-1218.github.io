@@ -12,24 +12,40 @@ const DEMO_TEXT = LANG === 'zh' ? {
     deltaOpt: '最优偏角 δ_opt',
     gain: '相对完美对准的增益',
     mOrder: 'Lambertian 阶数',
-    modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，且 δ+φ½ ≤ 90°。最优偏角 δ_opt > 0：用中心峰值辐照度换取孔径上更均匀的光束区域，使孔径积分功率最大化。',
-    step1: '步骤 1：发现与接近',
-    step2: '步骤 2：通信与充电',
-    done: '全部节点服务完成，即将重新开始…',
-    nodesServiced: '个节点已服务',
-    auvCap: 'SA-OPS 任务示意动画：AUV 先基于 SNR 发现节点（步骤 1），再根据节点能量状态决定"预充电 / 先通信后充电 / 仅通信"（步骤 2）。仅为可视化示意。',
+    distCenter: '分布中心',
+    beamAxis: 'Tx 光轴',
+    modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。最优偏角 δ_opt > 0：用中心峰值辐照度换取孔径上更均匀的光束区域，使期望接收功率最大化。',
+    fDiscover: '发现节点',
+    fEnergy: '读取能量状态',
+    fPre: '预充电',
+    fMid: '先通信后充电',
+    fPost: '仅通信',
+    fServiced: '服务完成',
+    narrPre: '发现节点 · E = {e}% 低于阈值 → 预充电，随后通信',
+    narrMid: '发现节点 · E = {e}% 处于正常范围 → 先通信后充电',
+    narrPost: '发现节点 · E = {e}% 电量健康 → 仅通信',
+    serviced: '服务完成 · 前往下一个节点…',
+    flowCap: 'SA-OPS 决策流程示意：根据节点实时能量状态，在三种动作中选择其一（论文 §III-E）。',
 } : {
     phiHalf: 'Half-power angle φ½',
     delta: 'Pointing offset δ',
     deltaOpt: 'Optimal offset δ_opt',
     gain: 'Gain vs perfect alignment',
     mOrder: 'Lambertian order',
-    modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½) and δ+φ½ ≤ 90°. The optimal offset δ_opt > 0 trades center irradiance for a more uniform beam region over the aperture.',
-    step1: 'Step 1: find & approach',
-    step2: 'Step 2: communicate & charge',
-    done: 'All nodes serviced — restarting…',
-    nodesServiced: 'nodes serviced',
-    auvCap: 'Illustrative SA-OPS mission: the AUV discovers a node (SNR-based, Step 1), then chooses among charge / communicate / both based on the node energy state (Step 2). For visualization only.',
+    distCenter: 'Distribution center',
+    beamAxis: 'Tx optical axis',
+    modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. The optimal offset δ_opt > 0 trades center irradiance for a more uniform beam region over the aperture.',
+    fDiscover: 'Discover node',
+    fEnergy: 'Read energy state',
+    fPre: 'Preemptive charging',
+    fMid: 'Communicate, then charge',
+    fPost: 'Communicate only',
+    fServiced: 'Serviced',
+    narrPre: 'Node found · E = {e}% below threshold → preemptive charging, then communication',
+    narrMid: 'Node found · E = {e}% in normal range → communicate, then charge',
+    narrPost: 'Node found · E = {e}% healthy → communicate only',
+    serviced: 'Serviced · moving to the next node…',
+    flowCap: 'SA-OPS decision flow: one of three actions is selected from the node\'s real-time energy state (paper §III-E).',
 }
 
 window.addEventListener('DOMContentLoaded', event => {
@@ -187,16 +203,17 @@ function svgEl(tag, attrs) {
 
 /* ---------------- Offset pointing demo — paper Eq. (33) ---------------- */
 function initOffsetDemo(host) {
-    const TX = { x: 70, y: 130 };
+    const TX = { x: 90, y: 150 };
+    const R = 150; // fan radius (fixed so the scene never gets clipped)
 
-    // deterministic pseudo-random PPP-like cloud
+    // deterministic pseudo-random node cloud inside the distribution fan
     function cloudPoints(n) {
         let seed = 421;
         const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
         const pts = [];
         for (let i = 0; i < n; i++) {
-            const t = rnd() * 2 - 1;          // angle fraction in [-1, 1] of half-angle
-            const rr = 0.18 + rnd() * 0.78;   // distance fraction
+            const t = rnd() * 2 - 1;          // angle fraction in [-1, 1] of the half-angle
+            const rr = 0.18 + rnd() * 0.80;   // distance fraction
             const s = 1.6 + rnd() * 1.8;      // dot radius
             const o = 0.25 + rnd() * 0.45;    // opacity
             pts.push({ t, rr, s, o });
@@ -207,7 +224,7 @@ function initOffsetDemo(host) {
 
     host.innerHTML = `
     <div class="demo-panel">
-      <svg class="demo-scene" viewBox="0 0 680 260" role="img" aria-label="Offset pointing geometry">
+      <svg class="demo-scene" viewBox="0 0 680 300" role="img" aria-label="Tx optical axis versus node distribution">
         <defs>
           <linearGradient id="odBeamGrad" x1="0" y1="0" x2="0" y2="1">
             <stop class="od-stop-a" offset="0"></stop>
@@ -215,19 +232,23 @@ function initOffsetDemo(host) {
             <stop class="od-stop-a" offset="1"></stop>
           </linearGradient>
         </defs>
+        <path id="od-dist" class="od-dist" d=""></path>
         <g id="od-cloud"></g>
         <path id="od-beam" d="" fill="url(#odBeamGrad)"></path>
-        <line id="od-axis" class="od-axis" x1="70" y1="130" x2="640" y2="130"></line>
-        <path id="od-hp-arc" class="od-hp-arc" d=""></path>
-        <text id="od-hp-label" class="od-label-sm" x="0" y="0"></text>
+        <line id="od-dist-axis" class="od-dist-axis" x1="0" y1="0" x2="0" y2="0"></line>
+        <line id="od-beam-axis" class="od-beam-axis" x1="0" y1="0" x2="0" y2="0"></line>
+        <path id="od-delta-arc" class="od-delta-arc" d=""></path>
+        <text id="od-delta-label" class="od-delta-label" x="0" y="0"></text>
+        <text id="od-dist-label" class="od-label-sm" x="0" y="0"></text>
+        <text id="od-beam-label" class="od-label-sm" x="0" y="0"></text>
+        <text id="od-fan-label" class="od-label-sm" x="0" y="0"></text>
         <g class="od-tx">
-          <circle cx="70" cy="130" r="7" class="od-tx-dot"></circle>
-          <circle cx="70" cy="130" r="13" class="od-tx-ring"></circle>
-          <path d="M 88 117 A 18 18 0 0 1 88 143" class="od-tx-wave"></path>
-          <path d="M 95 110 A 27 27 0 0 1 95 150" class="od-tx-wave"></path>
+          <circle cx="90" cy="150" r="7" class="od-tx-dot"></circle>
+          <circle cx="90" cy="150" r="13" class="od-tx-ring"></circle>
+          <path d="M 108 137 A 18 18 0 0 1 108 163" class="od-tx-wave"></path>
+          <path d="M 115 130 A 27 27 0 0 1 115 170" class="od-tx-wave"></path>
         </g>
-        <text x="70" y="168" class="od-label" text-anchor="middle">Tx</text>
-        <g id="od-rx"></g>
+        <text x="90" y="188" class="od-label" text-anchor="middle">Tx</text>
       </svg>
       <div class="demo-controls">
         <label>${DEMO_TEXT.phiHalf} <input id="od-phi" type="range" min="15" max="75" value="60" step="1"><output id="od-phi-out">60°</output></label>
@@ -286,63 +307,58 @@ function initOffsetDemo(host) {
         return { c, p };
     });
 
-    function drawScene(phiHalfDeg, deltaDeg, optDeg) {
-        // beam sector (bounded by an arc, like a lighthouse lobe)
-        const L = 560;
-        const a1 = (-phiHalfDeg) * Math.PI / 180, a2 = (phiHalfDeg) * Math.PI / 180;
-        const p1 = [TX.x + L * Math.cos(a1), TX.y + L * Math.sin(a1)];
-        const p2 = [TX.x + L * Math.cos(a2), TX.y + L * Math.sin(a2)];
-        $('od-beam').setAttribute('d', `M ${TX.x} ${TX.y} L ${p1[0]} ${p1[1]} A ${L} ${L} 0 0 1 ${p2[0]} ${p2[1]} Z`);
-        // half-power arc
-        const ar = 150;
-        const s1 = [TX.x + ar * Math.cos(a1), TX.y + ar * Math.sin(a1)];
-        const s2 = [TX.x + ar * Math.cos(a2), TX.y + ar * Math.sin(a2)];
-        $('od-hp-arc').setAttribute('d', `M ${s1[0]} ${s1[1]} A ${ar} ${ar} 0 0 1 ${s2[0]} ${s2[1]}`);
-        const midA = 0; // label at axis end of arc? put near upper edge
-        $('od-hp-label').setAttribute('x', TX.x + (ar + 22) * Math.cos(a2) - 12);
-        $('od-hp-label').setAttribute('y', TX.y + (ar + 22) * Math.sin(a2) + 4);
-        $('od-hp-label').textContent = 'φ½ = ' + Math.round(phiHalfDeg) + '°';
-        // cloud positions
+    const polar = (angDeg, r) => [TX.x + r * Math.cos(angDeg * Math.PI / 180), TX.y + r * Math.sin(angDeg * Math.PI / 180)];
+
+    function drawScene(phiHalfDeg, deltaDeg) {
+        // fixed radius → constant scene size, nothing gets clipped
+        const s1 = polar(-phiHalfDeg, R), s2 = polar(phiHalfDeg, R);
+        $('od-dist').setAttribute('d', `M ${TX.x} ${TX.y} L ${s1[0]} ${s1[1]} A ${R} ${R} 0 0 1 ${s2[0]} ${s2[1]} Z`);
+        const b1 = polar(deltaDeg - phiHalfDeg, R), b2 = polar(deltaDeg + phiHalfDeg, R);
+        $('od-beam').setAttribute('d', `M ${TX.x} ${TX.y} L ${b1[0]} ${b1[1]} A ${R} ${R} 0 0 1 ${b2[0]} ${b2[1]} Z`);
+        // axes: distribution center axis vs Tx optical axis
+        const da = polar(0, R + 24);
+        $('od-dist-axis').setAttribute('x1', TX.x);
+        $('od-dist-axis').setAttribute('y1', TX.y);
+        $('od-dist-axis').setAttribute('x2', da[0]);
+        $('od-dist-axis').setAttribute('y2', da[1]);
+        const ba = polar(deltaDeg, R + 24);
+        $('od-beam-axis').setAttribute('x1', TX.x);
+        $('od-beam-axis').setAttribute('y1', TX.y);
+        $('od-beam-axis').setAttribute('x2', ba[0]);
+        $('od-beam-axis').setAttribute('y2', ba[1]);
+        // δ arc between the two axes
+        if (deltaDeg > 1) {
+            const r = 66;
+            const q1 = polar(0, r), q2 = polar(deltaDeg, r);
+            $('od-delta-arc').setAttribute('d', `M ${q1[0]} ${q1[1]} A ${r} ${r} 0 0 1 ${q2[0]} ${q2[1]}`);
+            const mid = polar(deltaDeg / 2, r + 15);
+            $('od-delta-label').setAttribute('x', mid[0]);
+            $('od-delta-label').setAttribute('y', mid[1] + 4);
+            $('od-delta-label').textContent = 'δ';
+        } else {
+            $('od-delta-arc').setAttribute('d', '');
+            $('od-delta-label').textContent = '';
+        }
+        // labels
+        const dl = polar(0, R + 48);
+        $('od-dist-label').setAttribute('x', dl[0] - 8);
+        $('od-dist-label').setAttribute('y', dl[1] + 16);
+        $('od-dist-label').textContent = DEMO_TEXT.distCenter;
+        const bl = polar(deltaDeg, R + 44);
+        $('od-beam-label').setAttribute('x', bl[0] - 10);
+        $('od-beam-label').setAttribute('y', bl[1] - 8);
+        $('od-beam-label').textContent = DEMO_TEXT.beamAxis;
+        const fl = polar(-phiHalfDeg, R + 16);
+        $('od-fan-label').setAttribute('x', fl[0] - 6);
+        $('od-fan-label').setAttribute('y', fl[1] + 2);
+        $('od-fan-label').textContent = 'φ½';
+        // node cloud inside the distribution fan
         dots.forEach(({ c, p }) => {
             const ang = p.t * phiHalfDeg * Math.PI / 180;
-            const d = 70 + p.rr * 470;
+            const d = 26 + p.rr * (R - 30);
             c.setAttribute('cx', TX.x + d * Math.cos(ang));
             c.setAttribute('cy', TX.y + d * Math.sin(ang));
         });
-        // highlighted receiver: inside the beam, with random-ish orientation + deterministic offset δ
-        const rxAng = 0.28 * phiHalfDeg * Math.PI / 180;
-        const rxD = 400;
-        const rx = [TX.x + rxD * Math.cos(rxAng), TX.y + rxD * Math.sin(rxAng)];
-        const rxG = $('od-rx');
-        rxG.setAttribute('transform', `translate(${rx[0]}, ${rx[1]})`);
-        const rot = deltaDeg; // aperture rotated by δ from facing the transmitter
-        let html = `
-          <line x1="${-rxD * Math.cos(rxAng)}" y1="0" x2="0" y2="0" class="od-link"></line>
-          <g transform="rotate(${rot})">
-            <rect x="-4" y="-28" width="8" height="56" rx="4" class="od-disc"></rect>
-            <line x1="0" y1="0" x2="-58" y2="0" class="od-normal"></line>
-            <text x="-74" y="-6" class="od-label-sm od-normal-label">n</text>
-          </g>
-          <text x="12" y="-30" class="od-label-sm">Rx</text>
-          <path id="od-delta-arc" d="" class="od-delta-arc"></path>
-          <text id="od-delta-label" x="0" y="0" class="od-delta-label"></text>
-          <circle cx="0" cy="0" r="3.2" class="od-disc-dot"></circle>`;
-        rxG.innerHTML = html;
-        // delta arc from the LOS direction (pointing to Tx, angle 180°) to rotated normal (180°+δ)
-        if (deltaDeg > 0.5) {
-            const r = 34;
-            const pStart = [r * Math.cos(Math.PI), r * Math.sin(Math.PI)];
-            const endA = (180 + deltaDeg) * Math.PI / 180;
-            const pEnd = [r * Math.cos(endA), r * Math.sin(endA)];
-            const arc = rxG.querySelector('#od-delta-arc');
-            arc.setAttribute('d', `M ${pStart[0]} ${pStart[1]} A ${r} ${r} 0 0 1 ${pEnd[0]} ${pEnd[1]}`);
-            const lab = rxG.querySelector('#od-delta-label');
-            const midA = (180 + deltaDeg / 2) * Math.PI / 180;
-            lab.setAttribute('x', (r + 14) * Math.cos(midA));
-            lab.setAttribute('y', (r + 14) * Math.sin(midA) + 4);
-            lab.textContent = 'δ';
-        }
-        // draw node-orientation tick for a few cloud nodes? keep minimal
     }
 
     function drawPlot(phiHalfDeg, deltaDeg) {
@@ -362,7 +378,6 @@ function initOffsetDemo(host) {
         area.push(`${x1} ${y1}`, 'Z');
         $('od-curve').setAttribute('points', pts.join(' '));
         $('od-curve-fill').setAttribute('d', area.join(' '));
-        // optimum marker
         const ox = P2x(opt.delta), oy = P2y(pmax);
         $('od-opt-line').setAttribute('x1', ox);
         $('od-opt-line').setAttribute('x2', ox);
@@ -372,18 +387,15 @@ function initOffsetDemo(host) {
         optLab.setAttribute('x', Math.min(ox + 6, x1 - 90));
         optLab.setAttribute('y', Math.max(oy - 8, 26));
         optLab.textContent = 'δ_opt = ' + opt.delta.toFixed(1) + '°';
-        // current delta marker
         const cp = power(phiHalfDeg, deltaDeg);
         const cx = P2x(deltaDeg), cy = P2y(cp);
         $('od-del-line').setAttribute('x1', cx);
         $('od-del-line').setAttribute('x2', cx);
         $('od-del-dot').setAttribute('cx', cx);
         $('od-del-dot').setAttribute('cy', cy);
-        // baseline marker
         const bp = power(phiHalfDeg, 0);
         $('od-base-dot').setAttribute('cx', x0);
         $('od-base-dot').setAttribute('cy', P2y(bp));
-        // ticks
         $('od-tick-mid').textContent = (maxD / 2).toFixed(0) + '°';
         $('od-tick-end').textContent = maxD.toFixed(0) + '°';
         return { opt, cur: cp, base: bp };
@@ -412,151 +424,123 @@ function initOffsetDemo(host) {
     update();
 }
 
-/* ---------------- SA-OPS AUV animation ---------------- */
+/* ---------------- SA-OPS decision-flow animation ---------------- */
 function initAuvDemo(host) {
+    const BOX_H = 42;
+    const BRANCHES = [
+        { id: 'box-br0', y: 34, label: DEMO_TEXT.fPre, e: 12, narr: DEMO_TEXT.narrPre },
+        { id: 'box-br1', y: 108, label: DEMO_TEXT.fMid, e: 45, narr: DEMO_TEXT.narrMid },
+        { id: 'box-br2', y: 182, label: DEMO_TEXT.fPost, e: 82, narr: DEMO_TEXT.narrPost },
+    ];
+    const BOXES = [
+        { id: 'box-a', x: 18, y: 105, w: 120, h: BOX_H, label: DEMO_TEXT.fDiscover },
+        { id: 'box-b', x: 178, y: 105, w: 140, h: BOX_H, label: DEMO_TEXT.fEnergy },
+        ...BRANCHES.map(b => ({ id: b.id, x: 362, y: b.y, w: 186, h: 36, label: b.label })),
+        { id: 'box-c', x: 582, y: 105, w: 84, h: BOX_H, label: DEMO_TEXT.fServiced },
+    ];
+    const rects = {}, labels = {};
+    const svgNS = SVGS;
+
     host.innerHTML = `
-    <div class="demo-panel demo-ocean">
-      <svg class="demo-scene" viewBox="0 0 680 300" role="img" aria-label="SA-OPS mission animation">
+    <div class="demo-panel">
+      <svg class="demo-scene" viewBox="0 0 680 280" role="img" aria-label="SA-OPS decision flow">
         <defs>
-          <linearGradient id="auvWater" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#0a2131"></stop>
-            <stop offset="1" stop-color="#15415b"></stop>
-          </linearGradient>
-          <linearGradient id="auvBeamGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="rgba(93,214,232,0.55)"></stop>
-            <stop offset="1" stop-color="rgba(93,214,232,0.02)"></stop>
-          </linearGradient>
+          <marker id="flowArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+            <path class="flow-arrow-head" d="M0 0L10 5L0 10z"></path>
+          </marker>
         </defs>
-        <rect width="680" height="300" fill="url(#auvWater)" rx="12"></rect>
-        <polygon points="70,0 200,0 96,300 0,300" fill="rgba(255,255,255,0.030)"></polygon>
-        <polygon points="300,0 360,0 246,300 176,300" fill="rgba(255,255,255,0.022)"></polygon>
-        <path d="M0 268 Q 170 250 340 264 T 680 256 L680 300 L0 300 Z" fill="rgba(3,14,23,0.55)"></path>
-        <g id="auv-nodes"></g>
-        <g id="auv-group">
-          <polygon id="auv-beam" class="auv-beam" points="0,0 0,0 0,0" fill="url(#auvBeamGrad)" style="display:none"></polygon>
-          <g id="auv-flip">
-            <path class="auv-fin" d="M-30 -3 L-42 -13 L-28 -7 Z"></path>
-            <path class="auv-fin" d="M-30 3 L-42 13 L-28 7 Z"></path>
-            <path class="auv-body" d="M-34 0 Q -34 -12 6 -12 Q 28 -12 40 0 Q 28 12 6 12 Q -34 12 -34 0 Z"></path>
-            <path class="auv-tower" d="M-10 -12 Q -9 -22 3 -22 Q 13 -22 14 -12 Z"></path>
-            <circle class="auv-port" cx="-18" cy="0" r="2.6"></circle>
-            <ellipse class="auv-prop" cx="42" cy="0" rx="3.5" ry="8"></ellipse>
-          </g>
+        <g id="flow-boxes"></g>
+        <g class="flow-arrows">
+          <path class="flow-arrow" marker-end="url(#flowArrow)" d="M 138 126 L 172 126"></path>
+          <path class="flow-arrow" marker-end="url(#flowArrow)" d="M 318 120 L 356 52"></path>
+          <path class="flow-arrow" marker-end="url(#flowArrow)" d="M 318 126 L 356 126"></path>
+          <path class="flow-arrow" marker-end="url(#flowArrow)" d="M 318 132 L 356 200"></path>
+          <path class="flow-arrow" marker-end="url(#flowArrow)" d="M 548 52 L 578 118"></path>
+          <path class="flow-arrow" marker-end="url(#flowArrow)" d="M 548 126 L 578 126"></path>
+          <path class="flow-arrow" marker-end="url(#flowArrow)" d="M 548 200 L 578 134"></path>
+          <path class="flow-arrow flow-wrap" marker-end="url(#flowArrow)" d="M 624 147 L 624 258 L 78 258 L 78 151"></path>
         </g>
+        <circle id="flow-dot" class="flow-dot" r="5.5" cx="78" cy="126"></circle>
       </svg>
       <div class="demo-status">
-        <span class="status-chip" id="auv-status"></span>
-        <span class="status-progress" id="auv-progress"></span>
+        <span class="status-chip" id="flow-status"></span>
       </div>
-      <div class="demo-caption">${DEMO_TEXT.auvCap}</div>
+      <div class="demo-caption">${DEMO_TEXT.flowCap}</div>
     </div>`;
 
-    const NODES = [{ x: 520, y: 92 }, { x: 612, y: 208 }, { x: 412, y: 226 }, { x: 258, y: 82 }];
-    const state = NODES.map(() => 'awaiting');
-    const nodesG = host.querySelector('#auv-nodes');
-    const group = host.querySelector('#auv-group');
-    const flip = host.querySelector('#auv-flip');
-    const beam = host.querySelector('#auv-beam');
-    const statusEl = host.querySelector('#auv-status');
-    const progressEl = host.querySelector('#auv-progress');
-    const nodeG = NODES.map(n => {
-        const g = svgEl('g', { transform: `translate(${n.x}, ${n.y})` });
-        const halo = svgEl('circle', { r: 13, class: 'node-halo' });
-        const dot = svgEl('circle', { r: 6, class: 'node-dot' });
-        g.appendChild(halo);
-        g.appendChild(dot);
-        nodesG.appendChild(g);
-        return { g, halo, dot };
+    const boxesG = host.querySelector('#flow-boxes');
+    const dot = host.querySelector('#flow-dot');
+    const statusEl = host.querySelector('#flow-status');
+    BOXES.forEach(b => {
+        const rect = svgEl('rect', { x: b.x, y: b.y, width: b.w, height: b.h, rx: 9, class: 'flow-box' });
+        const label = svgEl('text', { x: b.x + b.w / 2, y: b.y + b.h / 2 + 4, class: 'flow-label' });
+        label.textContent = b.label;
+        boxesG.appendChild(rect);
+        boxesG.appendChild(label);
+        rects[b.id] = rect;
+        labels[b.id] = label;
     });
-    const paint = () => {
-        nodeG.forEach((n, i) => {
-            n.g.setAttribute('class', state[i] === 'serviced' ? 'node st-serv' : 'node st-await');
-        });
-    };
-    const AUV = { x: 100, y: 160 };
-    const SPEED = 170;
-    const det = host.closest('details');
-    let phase = 'move', target = 0, phaseT = 0, running = false, raf = null, last = 0;
-    let vxSign = 1;
 
-    function setBeam(n) {
-        const dx = n.x - AUV.x, dy = n.y - AUV.y;
-        const d = Math.hypot(dx, dy) || 1;
-        const px = -dy / d, py = dx / d, w = 10;
-        beam.setAttribute('points', `0,0 ${dx + px * w},${dy + py * w} ${dx - px * w},${dy - py * w}`);
+    const det = host.closest('details');
+    let running = false, raf = null, last = 0;
+    let scenario = 0, phaseIdx = 0, phaseT = 0;
+    const PHASE_DUR = [850, 900, 900, 1250];
+
+    function framesFor(s) {
+        const cb = BRANCHES[s].y + 18;
+        return [
+            { pts: [[78, 126], [248, 126]], active: 'box-a' },
+            { pts: [[248, 126], [455, cb]], active: 'box-b' },
+            { pts: [[455, cb], [624, 126]], active: BRANCHES[s].id },
+            { pts: [[624, 126], [624, 258], [78, 258], [78, 126]], active: 'box-c' },
+        ];
     }
-    function setStatus(txt, count) {
-        statusEl.textContent = txt;
-        progressEl.textContent = count + ' / ' + NODES.length + ' ' + DEMO_TEXT.nodesServiced;
+    function setActive(id) {
+        BOXES.forEach(b => rects[b.id].classList.toggle('active', b.id === id));
     }
-    function ripple(n) {
-        const c = svgEl('circle', { cx: n.x, cy: n.y, r: 8, class: 'node-ripple' });
-        nodesG.appendChild(c);
-        setTimeout(() => c.remove(), 900);
+    function pointOn(pts, f) {
+        let total = 0;
+        const lens = [];
+        for (let i = 1; i < pts.length; i++) {
+            const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+            lens.push(l); total += l;
+        }
+        let rem = f * total;
+        for (let i = 0; i < lens.length; i++) {
+            if (rem <= lens[i] || i === lens.length - 1) {
+                const g = lens[i] === 0 ? 0 : Math.min(1, rem / lens[i]);
+                return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * g, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * g];
+            }
+            rem -= lens[i];
+        }
+        return pts[pts.length - 1];
+    }
+    function startScenario(now) {
+        const br = BRANCHES[scenario];
+        statusEl.textContent = br.narr.replace('{e}', br.e);
+        phaseIdx = 0;
+        phaseT = now;
     }
     function step(now) {
         if (!running) { raf = null; return; }
-        if (!last) last = now;
-        const dt = Math.min(0.05, (now - last) / 1000);
-        last = now;
-        if (phase === 'move') {
-            const n = NODES[target];
-            const dx = n.x - AUV.x, dy = n.y - AUV.y;
-            const dist = Math.hypot(dx, dy);
-            if (dist < SPEED * dt * 1.2 + 6) {
-                AUV.x = n.x; AUV.y = n.y;
-                phase = 'service';
-                phaseT = now;
-                beam.style.display = 'block';
-                setBeam(n);
-                setStatus(DEMO_TEXT.step2, state.filter(s => s === 'serviced').length);
-            } else {
-                const k = 1 - Math.exp(-dt * 3.4);
-                const vx = dx * k, vy = dy * k;
-                AUV.x += vx; AUV.y += vy;
-                vxSign = vx >= 0 ? 1 : -1;
-            }
-        } else if (phase === 'service') {
-            setBeam(NODES[target]);
-            if (now - phaseT > 1050) {
-                state[target] = 'serviced';
-                paint();
-                ripple(NODES[target]);
-                beam.style.display = 'none';
-                const done = state.filter(s => s === 'serviced').length;
-                setStatus(DEMO_TEXT.step1, done);
-                let best = -1, bd = Infinity;
-                state.forEach((s, i) => {
-                    if (s === 'awaiting') {
-                        const d = Math.hypot(NODES[i].x - AUV.x, NODES[i].y - AUV.y);
-                        if (d < bd) { bd = d; best = i; }
-                    }
-                });
-                if (best >= 0) {
-                    target = best;
-                    phase = 'move';
-                } else {
-                    phase = 'wait';
-                    phaseT = now;
-                    setStatus(DEMO_TEXT.done, done);
-                }
-            }
-        } else if (phase === 'wait') {
-            if (now - phaseT > 2200) {
-                state.fill('awaiting');
-                paint();
-                AUV.x = 100; AUV.y = 160;
-                vxSign = 1;
-                target = 0;
-                phase = 'move';
-                setStatus(DEMO_TEXT.step1, 0);
+        if (!phaseT) startScenario(now);
+        const frames = framesFor(scenario);
+        const frame = frames[phaseIdx];
+        const dur = PHASE_DUR[phaseIdx];
+        const f = Math.min(1, (now - phaseT) / dur);
+        const pos = pointOn(frame.pts, f);
+        dot.setAttribute('cx', pos[0]);
+        dot.setAttribute('cy', pos[1]);
+        setActive(frame.active);
+        if (f >= 1) {
+            phaseIdx++;
+            phaseT = now;
+            if (phaseIdx >= frames.length) {
+                scenario = (scenario + 1) % BRANCHES.length;
+                phaseIdx = 0;
+                startScenario(now);
             }
         }
-        const bob = Math.sin(now * 0.0022) * 2.2;
-        group.setAttribute('transform', `translate(${AUV.x}, ${AUV.y + bob})`);
-        flip.style.transform = vxSign >= 0 ? 'scaleX(1)' : 'scaleX(-1)';
-        flip.style.transformBox = 'fill-box';
-        flip.style.transformOrigin = 'center';
         raf = requestAnimationFrame(step);
     }
     const resume = () => {
@@ -569,9 +553,9 @@ function initAuvDemo(host) {
     const pause = () => {
         running = false;
         if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+        phaseT = 0;
+        setActive(null);
     };
     det.addEventListener('toggle', () => { if (det.open) resume(); else pause(); });
-    paint();
-    setStatus(DEMO_TEXT.step1, 0);
     resume();
 }
