@@ -10,7 +10,18 @@
     <meta property="og:description" content="Visiting Student at KAUST CTL. Generative AI, semantic communications, and underwater optical wireless communication." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://yuer-1218.github.io/" />
+    <meta property="og:image" content="https://yuer-1218.github.io/static/assets/img/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://yuer-1218.github.io/static/assets/img/og-image.png" />
     <title id="title"></title>
+    <script>
+        (function () {
+            var t = new URLSearchParams(location.search).get('theme') || localStorage.getItem('theme');
+            if (t === 'dark') document.documentElement.dataset.theme = 'dark';
+        })();
+    </script>
 
     <!-- Icon -->
     <link rel="icon" type="image/x-icon" href="static/assets/favicon.ico" />
@@ -105,6 +116,10 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link me-lg-3" href="#awards">AWARDS</a>
+                    </li>
+                    <li class="nav-item d-flex align-items-center mt-2 mt-lg-0 ms-lg-2">
+                        <button type="button" id="lang-toggle" class="nav-toggle-btn">中文</button>
+                        <button type="button" id="theme-toggle" class="nav-toggle-btn" aria-label="Toggle dark mode">☾</button>
                     </li>
 
                 </ul>

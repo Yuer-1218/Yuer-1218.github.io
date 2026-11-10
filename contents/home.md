@@ -1,3 +1,5 @@
+<p class="fact-strip">3× first-author IEEE papers (IoT-J · TMC · GLOBECOM) · Tsinghua EE '26 · Visiting Student @ KAUST CTL</p>
+
 Hi, everyone! I'm **Qiyu (Yusuf) Ma**. I received my B.E. in Electronic Engineering from **Tsinghua University** in June 2026, and I am currently a **Visiting Student** at the **Communication Theory Lab (CTL)**, King Abdullah University of Science and Technology (KAUST). My research focuses on **Generative AI**, **Semantic Communications**, **Underwater Wireless Optical Communication (UWOC)**, and **Stochastic Modeling** for autonomous systems. I am currently open to industry opportunities.
 
 #### **Contact**

@@ -201,4 +201,305 @@ section .main-body{
     }
 }
 
+/* ---------- Fact strip ---------- */
+
+.fact-strip {
+    background: rgba(112, 30, 94, 0.06);
+    border-left: 4px solid var(--h-title-color);
+    border-radius: 4px;
+    padding: 0.55rem 0.9rem;
+    margin-bottom: 1.4rem;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.main-body {
+    opacity: 0;
+    transition: opacity 0.45s ease;
+}
+
+.main-body.loaded {
+    opacity: 1;
+}
+
+/* ---------- Nav toggles ---------- */
+
+.nav-toggle-btn {
+    background: transparent;
+    border: 1px solid rgba(112, 30, 94, 0.35);
+    color: var(--h-title-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    margin-left: 0.4rem;
+    line-height: 1.2;
+}
+
+.nav-toggle-btn:hover {
+    background: var(--h-title-color);
+    color: #ffffff;
+}
+
+/* ---------- Expanders ---------- */
+
+details.expander {
+    margin-top: 1.1rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.15);
+    padding-top: 0.8rem;
+}
+
+details.expander summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--h-title-color);
+    list-style: none;
+    user-select: none;
+}
+
+details.expander summary::-webkit-details-marker {
+    display: none;
+}
+
+details.expander summary::before {
+    content: "▶";
+    display: inline-block;
+    font-size: 0.68rem;
+    margin-right: 0.45rem;
+}
+
+details.expander[open] summary::before {
+    content: "▼";
+}
+
+.expander-body {
+    margin-top: 0.85rem;
+}
+
+.expander-body p {
+    font-size: 0.95rem;
+    font-weight: 300;
+    line-height: 1.65rem;
+    margin-bottom: 0.8rem;
+}
+
+pre.bibtex {
+    background: #f7f3f6;
+    border: 1px solid rgba(112, 30, 94, 0.15);
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.76rem;
+    line-height: 1.15rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.cite-btn {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--h-title-color);
+    border: 1px solid var(--h-title-color);
+    background: transparent;
+    border-radius: 6px;
+    padding: 0.15rem 0.6rem;
+}
+
+.cite-btn:hover {
+    background: var(--h-title-color);
+    color: #ffffff;
+}
+
+/* ---------- Demos ---------- */
+
+.demo {
+    margin-top: 0.85rem;
+}
+
+.demo-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.4rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+}
+
+.demo-controls label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+}
+
+.demo-controls input[type=range] {
+    width: 130px;
+}
+
+.demo-controls output {
+    min-width: 2.6em;
+    font-variant-numeric: tabular-nums;
+}
+
+.demo-svg {
+    width: 100%;
+    max-width: 640px;
+    display: block;
+    background: #f4f8fb;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.demo-svg text {
+    font-family: inherit;
+}
+
+.demo-readout {
+    font-size: 0.85rem;
+    color: #444;
+}
+
+.demo-readout strong {
+    color: var(--h-title-color);
+}
+
+.demo-caption {
+    font-size: 0.78rem;
+    color: #8a8a8a;
+    margin-top: 0.4rem;
+}
+
+/* ---------- Dark theme ---------- */
+
+html[data-theme="dark"] body {
+    background: #121212;
+    color: #d6d6d6;
+}
+
+html[data-theme="dark"] .bg-gradient-primary-to-secondary-light {
+    background: linear-gradient(45deg, #141414, #181818) !important;
+}
+
+html[data-theme="dark"] .bg-gradient-primary-to-secondary-gray {
+    background: linear-gradient(45deg, #1a1a1a, #1e1e1e) !important;
+}
+
+html[data-theme="dark"] section header h2 {
+    color: #d9a8cf;
+}
+
+html[data-theme="dark"] section .main-body {
+    color: #d6d6d6;
+}
+
+html[data-theme="dark"] .main-body a {
+    color: #d9a8cf;
+}
+
+html[data-theme="dark"] .header {
+    background: #181818;
+}
+
+html[data-theme="dark"] .header .navbar-brand,
+html[data-theme="dark"] .header .nav-link {
+    color: #e8e8e8 !important;
+}
+
+html[data-theme="dark"] .research-card {
+    background: #1e1e1e;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="dark"] .research-title {
+    color: #f0e6ee;
+}
+
+html[data-theme="dark"] .research-body p {
+    color: #cfcfcf;
+}
+
+html[data-theme="dark"] .research-note {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"] .research-venue {
+    background: #8e2f77;
+}
+
+html[data-theme="dark"] .research-links a {
+    color: #d9a8cf;
+    border-color: #d9a8cf;
+}
+
+html[data-theme="dark"] .research-links a:hover {
+    background: #d9a8cf;
+    color: #1e1e1e;
+}
+
+html[data-theme="dark"] .fact-strip {
+    background: rgba(217, 168, 207, 0.08);
+    color: #e6dbe3;
+}
+
+html[data-theme="dark"] details.expander {
+    border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+html[data-theme="dark"] details.expander summary {
+    color: #d9a8cf;
+}
+
+html[data-theme="dark"] .expander-body p {
+    color: #cfcfcf;
+}
+
+html[data-theme="dark"] pre.bibtex {
+    background: #232323;
+    border-color: rgba(217, 168, 207, 0.25);
+    color: #ddd;
+}
+
+html[data-theme="dark"] .cite-btn {
+    color: #d9a8cf;
+    border-color: #d9a8cf;
+}
+
+html[data-theme="dark"] .cite-btn:hover {
+    background: #d9a8cf;
+    color: #1e1e1e;
+}
+
+html[data-theme="dark"] .nav-toggle-btn {
+    color: #d9a8cf;
+    border-color: rgba(217, 168, 207, 0.4);
+}
+
+html[data-theme="dark"] .nav-toggle-btn:hover {
+    background: #d9a8cf;
+    color: #1e1e1e;
+}
+
+html[data-theme="dark"] .demo-readout {
+    color: #c5c5c5;
+}
+
+html[data-theme="dark"] .demo-readout strong {
+    color: #d9a8cf;
+}
+
+html[data-theme="dark"] .demo-svg {
+    background: #101a22;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .demo-caption {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"] .demo-controls input[type=range] {
+    accent-color: #d9a8cf;
+}
+
 

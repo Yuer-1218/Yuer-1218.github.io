@@ -5,3 +5,4 @@
 - **Academic Research Promotion Funding**, Tsinghua University (15,000 CNY/year), 2025 – Present.
 - **Second Prize**, "Tianfu Core" Electronic Industry Research Detachment, 2023.
 - **IEEE Student Member**, since 2025.
+- **Talk at IEEE GLOBECOM 2025** — [Slides (PDF)](static/files/GLOBECOM2025_slides.pdf).
