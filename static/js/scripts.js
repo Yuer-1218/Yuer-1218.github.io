@@ -317,7 +317,7 @@ function initOffsetDemo(host) {
             if (alpha < 0.004) continue;
             const p1 = pt(a, D), p2 = pt(a + step, D);
             field.appendChild(svgEl('path', {
-                d: `M ${TXP.x} ${TXP.y} L ${f1(p1[0])} ${f1(p1[1])} A ${D} ${D} 0 0 1 ${f1(p2[0])} ${f1(p2[1])} Z`,
+                d: `M ${TXP.x} ${TXP.y} L ${f1(p1[0])} ${f1(p1[1])} A ${D} ${D} 0 0 0 ${f1(p2[0])} ${f1(p2[1])} Z`,
                 class: 'od-field-w',
                 opacity: alpha.toFixed(3)
             }));
@@ -418,7 +418,7 @@ function initOffsetDemo(host) {
         const d1 = delta, d2 = Math.min(90, delta + phiHalf);
         // the collected arc [δ, δ+φ½] on the sphere of nodes
         const A = pt(d1, D), B = pt(d2, D);
-        const bandPath = `M ${f1(A[0])} ${f1(A[1])} A ${D} ${D} 0 0 1 ${f1(B[0])} ${f1(B[1])}`;
+        const bandPath = `M ${f1(A[0])} ${f1(A[1])} A ${D} ${D} 0 0 0 ${f1(B[0])} ${f1(B[1])}`;
         $('od-band').setAttribute('d', bandPath);
         $('od-band-glow').setAttribute('d', bandPath);
         const pmax = optimum(phiHalf).P || 1;
@@ -427,7 +427,7 @@ function initOffsetDemo(host) {
         $('od-band-glow').setAttribute('stroke-opacity', (0.10 + 0.22 * t).toFixed(3));
         // δ marker close to the Tx
         const da = pt(0, 80), db = pt(Math.max(delta, 0.01), 80);
-        $('od-delta-arc').setAttribute('d', delta > 0.5 ? `M ${f1(da[0])} ${f1(da[1])} A 80 80 0 0 1 ${f1(db[0])} ${f1(db[1])}` : '');
+        $('od-delta-arc').setAttribute('d', delta > 0.5 ? `M ${f1(da[0])} ${f1(da[1])} A 80 80 0 0 0 ${f1(db[0])} ${f1(db[1])}` : '');
         const dl = pt(delta / 2, 99);
         $('od-delta-lab').setAttribute('x', f1(dl[0]));
         $('od-delta-lab').setAttribute('y', f1(dl[1]));
