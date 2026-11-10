@@ -227,15 +227,15 @@ function initOffsetDemo(host) {
         <path id="od-sphere" class="od-sphere" d=""></path>
         <g class="od-tick" id="od-ticks"></g>
         <g id="od-ticklabels"></g>
+        <line id="od-mid-ray" class="od-mid-ray" x1="340" y1="46" x2="340" y2="46"></line>
         <path id="od-band-glow" class="od-band-glow" d=""></path>
         <path id="od-band" class="od-band" d=""></path>
         <g id="od-dots"></g>
         <path id="od-delta-arc" class="od-delta-arc-sm" d=""></path>
         <text id="od-delta-lab" class="od-delta-lab" x="0" y="0" text-anchor="middle"></text>
         <text id="od-win-lab-phi" class="od-label-band" x="0" y="0" text-anchor="middle"></text>
-        <text id="od-win-lab-p" class="od-label-band" x="0" y="0" text-anchor="middle"></text>
         <line class="od-axis" x1="340" y1="46" x2="340" y2="276"></line>
-        <text class="od-label-sm" x="350" y="70">${DEMO_TEXT.axisLabel}</text>
+        <text class="od-label-sm" x="330" y="70" text-anchor="end">${DEMO_TEXT.axisLabel}</text>
         <text class="od-label-sm od-d-lab" x="332" y="215" text-anchor="middle" transform="rotate(-90 332 215)">${DEMO_TEXT.dLabel}</text>
         <text id="od-lg-density" class="od-label-sm" x="18" y="18"></text>
         <text id="od-lg-density2" class="od-label-sm" x="18" y="34"></text>
@@ -434,14 +434,13 @@ function initOffsetDemo(host) {
         $('od-delta-lab').textContent = delta > 4 ? 'δ' : '';
         // labels on the collected arc
         const midA = d1 + (d2 - d1) / 2;
-        const pl = pt(midA, D - 32);
+        const mr = pt(midA, D);
+        $('od-mid-ray').setAttribute('x2', f1(mr[0]));
+        $('od-mid-ray').setAttribute('y2', f1(mr[1]));
+        const pl = pt(midA + 7, D - 40);
         $('od-win-lab-phi').setAttribute('x', f1(pl[0]));
         $('od-win-lab-phi').setAttribute('y', f1(pl[1]));
         $('od-win-lab-phi').textContent = DEMO_TEXT.winLabel;
-        const pq = pt(midA, D - 60);
-        $('od-win-lab-p').setAttribute('x', f1(pq[0]));
-        $('od-win-lab-p').setAttribute('y', f1(pq[1]));
-        $('od-win-lab-p').textContent = 'P = ' + Math.round(100 * power(phiHalf, delta) / p0) + '% · P(0)';
         // highlight the nodes inside the collected arc
         let inBand = 0, rightTotal = 0;
         dotEls.forEach(({ el, ang }) => {
