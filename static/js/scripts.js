@@ -14,7 +14,7 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian 阶数',
     lgDensity: '● 节点部署（角度密度 ∝ sin u）',
     lgIntensity: '亮度 ∝ cosᵐ u（光强）',
-    phiFixed: 'φ½ = 60°（固定）',
+    phiFixed: 'φ½ = 45°（固定）',
     gainNow: '当前 δ 的增益',
     winLabel: '采集窗口（φ½）',
     gLabel: '机制：g(u) = cosᵐ(u)·sin(u) 上宽度为 φ½ 的滑动窗口',
@@ -38,7 +38,7 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian order',
     lgDensity: '● node deployment (per-degree density ∝ sin u)',
     lgIntensity: 'brightness ∝ cosᵐ u (intensity)',
-    phiFixed: 'φ½ = 60° (fixed)',
+    phiFixed: 'φ½ = 45° (fixed)',
     gainNow: 'gain at current δ',
     winLabel: 'collection window (φ½)',
     gLabel: 'Mechanism: width-φ½ window sliding over g(u) = cosᵐ(u)·sin(u)',
@@ -235,7 +235,7 @@ function initOffsetDemo(host) {
       </svg>
       <div class="demo-controls">
         <span class="demo-fixed">${DEMO_TEXT.phiFixed}</span>
-        <label>${DEMO_TEXT.delta} <input id="od-del" type="range" min="0" max="30" value="0" step="0.5"><output id="od-del-out">0°</output></label>
+        <label>${DEMO_TEXT.delta} <input id="od-del" type="range" min="0" max="45" value="0" step="0.5"><output id="od-del-out">0°</output></label>
       </div>
       <svg class="demo-plot" viewBox="0 0 680 150" role="img" aria-label="Normalized received power versus offset">
         <line class="od-plot-axis" x1="70" y1="122" x2="648" y2="122"></line>
@@ -334,18 +334,18 @@ function initOffsetDemo(host) {
                 labs.appendChild(t);
             }
         }
-        // sliding window [δ, δ+φ½] — directional offset (one side only)
+        // collection window [δ, δ+φ½] — an annular sector of the deployment region
         const d1 = deltaDeg, d2 = Math.min(90, deltaDeg + phiHalfDeg);
-        const RW = RMAX + 8;
-        const w1 = pt(d1, RW), w2 = pt(d2, RW);
-        $('od-win').setAttribute('d', `M ${TXP.x} ${TXP.y} L ${w1[0].toFixed(1)} ${w1[1].toFixed(1)} A ${RW} ${RW} 0 0 1 ${w2[0].toFixed(1)} ${w2[1].toFixed(1)} Z`);
+        const RIN = 48;
+        const A1 = pt(d1, RIN), A2 = pt(d2, RIN), B1 = pt(d1, RMAX), B2 = pt(d2, RMAX);
+        $('od-win').setAttribute('d', `M ${A1[0].toFixed(1)} ${A1[1].toFixed(1)} A ${RIN} ${RIN} 0 0 1 ${A2[0].toFixed(1)} ${A2[1].toFixed(1)} L ${B2[0].toFixed(1)} ${B2[1].toFixed(1)} A ${RMAX} ${RMAX} 0 0 0 ${B1[0].toFixed(1)} ${B1[1].toFixed(1)} Z`);
         // band brightness reflects the power collected at the current δ
         const pmax = optimum(phiHalfDeg).P || 1;
-        const p0 = power(phiHalfDeg, 0);
+        const p0 = power(phiHalfDeg, 0) || 1;
         const t = (power(phiHalfDeg, deltaDeg) - p0) / ((pmax - p0) || 1);
         $('od-win').setAttribute('fill-opacity', (0.10 + 0.32 * Math.max(0, Math.min(1, t))).toFixed(3));
         // current Tx optical axis (tilted by δ)
-        const ax = pt(d1, RW + 12);
+        const ax = pt(d1, RMAX + 10);
         $('od-axis-d').setAttribute('x1', TXP.x);
         $('od-axis-d').setAttribute('y1', TXP.y);
         $('od-axis-d').setAttribute('x2', ax[0].toFixed(1));
@@ -356,14 +356,15 @@ function initOffsetDemo(host) {
             el.classList.toggle('in-win', inW);
             el.setAttribute('opacity', inW ? '0.95' : '0.30');
         });
-        const pl = pt(d1 + (d2 - d1) / 2, RW - 26);
+        const midA = d1 + (d2 - d1) / 2;
+        const pl = pt(midA, RMAX - 18);
         $('od-win-lab-phi').setAttribute('x', pl[0].toFixed(1));
         $('od-win-lab-phi').setAttribute('y', pl[1].toFixed(1));
         $('od-win-lab-phi').textContent = DEMO_TEXT.winLabel;
-        const pq = pt(d1 + (d2 - d1) / 2, RW - 62);
+        const pq = pt(midA, RMAX - 56);
         $('od-win-lab-p').setAttribute('x', pq[0].toFixed(1));
         $('od-win-lab-p').setAttribute('y', pq[1].toFixed(1));
-        $('od-win-lab-p').textContent = 'P = ' + (100 * power(phiHalfDeg, deltaDeg) / pmax).toFixed(0) + '%';
+        $('od-win-lab-p').textContent = 'P = ' + Math.round(100 * power(phiHalfDeg, deltaDeg) / p0) + '%';
         $('od-lg-density').textContent = DEMO_TEXT.lgDensity;
         $('od-lg-intensity').textContent = DEMO_TEXT.lgIntensity;
     }
@@ -409,7 +410,7 @@ function initOffsetDemo(host) {
     }
 
     function update() {
-        const phiHalf = 60; // fixed half-power angle
+        const phiHalf = 45; // fixed half-power angle
         const delta = +delIn.value;
         $('od-del-out').textContent = delta.toFixed(1) + '°';
         drawRadial(phiHalf, delta);
