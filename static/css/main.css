@@ -592,7 +592,23 @@ html[data-theme="dark"] .od-g-peak-line {
 
 .od-win {
     fill: #d69a2d;
-    stroke: none;
+    stroke: #a06f1c;
+    stroke-width: 2;
+}
+
+.od-node.in-win {
+    fill: #b07615;
+}
+
+#od-win-lab-phi,
+#od-win-lab-p {
+    fill: #6b4e12;
+    font-weight: 600;
+}
+
+html[data-theme="dark"] #od-win-lab-phi,
+html[data-theme="dark"] #od-win-lab-p {
+    fill: #ffe2a8;
 }
 
 .od-axis-d {
@@ -609,6 +625,11 @@ html[data-theme="dark"] .od-g-peak-line {
 
 html[data-theme="dark"] .od-win {
     fill: #e0a63a;
+    stroke: #ffcf6a;
+}
+
+html[data-theme="dark"] .od-node.in-win {
+    fill: #ffcf6a;
 }
 
 html[data-theme="dark"] .od-axis-d {

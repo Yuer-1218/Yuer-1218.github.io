@@ -16,6 +16,7 @@ const DEMO_TEXT = LANG === 'zh' ? {
     lgIntensity: '亮度 ∝ cosᵐ u（光强）',
     phiFixed: 'φ½ = 60°（固定）',
     gainNow: '当前 δ 的增益',
+    winLabel: '采集窗口（φ½）',
     gLabel: '机制：g(u) = cosᵐ(u)·sin(u) 上宽度为 φ½ 的滑动窗口',
     modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。关键假设：节点服从均匀 PPP（体积密度恒定）——对径向积分后单位立体角内密度恒定，折算到每度角度密度 ∝ sinθ（球坐标雅可比），离中心轴越远越密——这正是偏转光轴可以收集到更多节点的原因。',
     fDiscover: '发现节点',
@@ -39,6 +40,7 @@ const DEMO_TEXT = LANG === 'zh' ? {
     lgIntensity: 'brightness ∝ cosᵐ u (intensity)',
     phiFixed: 'φ½ = 60° (fixed)',
     gainNow: 'gain at current δ',
+    winLabel: 'collection window (φ½)',
     gLabel: 'Mechanism: width-φ½ window sliding over g(u) = cosᵐ(u)·sin(u)',
     modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. Key assumption: a homogeneous PPP (constant volume density) — after marginalizing over range this gives a constant density per unit solid angle, i.e. per-degree density ∝ sinθ (the spherical Jacobian), so nodes get denser away from the center axis. That is why offsetting the axis can collect more nodes.',
     fDiscover: 'Discover node',
@@ -221,6 +223,7 @@ function initOffsetDemo(host) {
         <g class="od-tick" id="od-rp-ticks"></g>
         <g class="od-label-sm" id="od-rp-ticklabels"></g>
         <text id="od-win-lab-phi" class="od-label-sm" x="0" y="0"></text>
+        <text id="od-win-lab-p" class="od-label-sm" x="0" y="0"></text>
         <text id="od-lg-density" class="od-label-sm" x="18" y="26"></text>
         <text id="od-lg-intensity" class="od-label-sm" x="662" y="26" text-anchor="end"></text>
         <g class="od-tx">
@@ -234,35 +237,6 @@ function initOffsetDemo(host) {
         <span class="demo-fixed">${DEMO_TEXT.phiFixed}</span>
         <label>${DEMO_TEXT.delta} <input id="od-del" type="range" min="0" max="30" value="0" step="0.5"><output id="od-del-out">0°</output></label>
       </div>
-      <svg class="demo-plot" viewBox="0 0 680 190" role="img" aria-label="Density, intensity and their product with a sliding window">
-        <text id="od-g-label" class="od-plot-tick" x="70" y="12"></text>
-        <line class="od-plot-axis" x1="70" y1="150" x2="648" y2="150"></line>
-        <line class="od-plot-axis" x1="70" y1="24" x2="70" y2="150"></line>
-        <g class="od-tick">
-          <line x1="262.7" y1="150" x2="262.7" y2="156"></line>
-          <line x1="455.3" y1="150" x2="455.3" y2="156"></line>
-          <line x1="648" y1="150" x2="648" y2="156"></line>
-          <line x1="70" y1="87" x2="64" y2="87"></line>
-          <line x1="70" y1="24" x2="64" y2="24"></line>
-        </g>
-        <text class="od-plot-tick" x="70" y="170" text-anchor="middle">0°</text>
-        <text class="od-plot-tick" x="262.7" y="170" text-anchor="middle">30°</text>
-        <text class="od-plot-tick" x="455.3" y="170" text-anchor="middle">60°</text>
-        <text class="od-plot-tick" x="648" y="170" text-anchor="middle">90°</text>
-        <text class="od-plot-tick" x="58" y="28" text-anchor="end">1</text>
-        <text class="od-plot-tick" x="58" y="91" text-anchor="end">.5</text>
-        <text class="od-plot-tick" x="58" y="154" text-anchor="end">0</text>
-        <text class="od-plot-tick" x="658" y="146">u</text>
-        <rect id="od-g-band" x="0" y="24" width="0" height="126" class="od-g-band"></rect>
-        <path id="od-g-fill" class="od-g-fill" d=""></path>
-        <path id="od-p-sin" class="od-rp-sin" d=""></path>
-        <path id="od-p-cos" class="od-rp-cos" d=""></path>
-        <path id="od-g-curve" class="od-g-curve" d=""></path>
-        <polyline id="od-g-hi" class="od-g-hi" points=""></polyline>
-        <line id="od-g-peak-line" class="od-g-peak-line" x1="0" y1="24" x2="0" y2="150"></line>
-        <circle id="od-g-edge1" class="od-g-edge" r="4" cx="0" cy="0"></circle>
-        <circle id="od-g-edge2" class="od-g-edge" r="4" cx="0" cy="0"></circle>
-      </svg>
       <svg class="demo-plot" viewBox="0 0 680 150" role="img" aria-label="Normalized received power versus offset">
         <line class="od-plot-axis" x1="70" y1="122" x2="648" y2="122"></line>
         <line class="od-plot-axis" x1="70" y1="16" x2="70" y2="122"></line>
@@ -287,6 +261,7 @@ function initOffsetDemo(host) {
 
     const $ = id => host.querySelector('#' + id);
     const delIn = $('od-del');
+    const dotEls = []; // { el, ang } for window highlighting
 
     // Paper Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), m = −ln2/ln cos(φ½)
     function lambertOrder(phiHalfDeg) {
@@ -340,11 +315,13 @@ function initOffsetDemo(host) {
                 const sign = rnd() < 0.5 ? -1 : 1;
                 const rr = 40 + rnd() * (RMAX - 56);
                 const q = pt(sign * th, rr);
-                dotsG.appendChild(svgEl('circle', {
+                const el = svgEl('circle', {
                     cx: q[0].toFixed(1), cy: q[1].toFixed(1),
                     r: (1.6 + rnd() * 1.7).toFixed(1),
                     class: 'od-node', opacity: (0.40 + rnd() * 0.45).toFixed(2)
-                }));
+                });
+                dotsG.appendChild(el);
+                dotEls.push({ el, ang: sign * th });
             }
             // ticks every 30° across the 180° half-plane
             const ticks = $('od-rp-ticks'), labs = $('od-rp-ticklabels');
@@ -373,10 +350,20 @@ function initOffsetDemo(host) {
         $('od-axis-d').setAttribute('y1', TXP.y);
         $('od-axis-d').setAttribute('x2', ax[0].toFixed(1));
         $('od-axis-d').setAttribute('y2', ax[1].toFixed(1));
+        // highlight the nodes captured by the window
+        dotEls.forEach(({ el, ang }) => {
+            const inW = ang >= d1 - 0.1 && ang <= d2 + 0.1;
+            el.classList.toggle('in-win', inW);
+            el.setAttribute('opacity', inW ? '0.95' : '0.30');
+        });
         const pl = pt(d1 + (d2 - d1) / 2, RW - 26);
         $('od-win-lab-phi').setAttribute('x', pl[0].toFixed(1));
         $('od-win-lab-phi').setAttribute('y', pl[1].toFixed(1));
-        $('od-win-lab-phi').textContent = 'φ½';
+        $('od-win-lab-phi').textContent = DEMO_TEXT.winLabel;
+        const pq = pt(d1 + (d2 - d1) / 2, RW - 62);
+        $('od-win-lab-p').setAttribute('x', pq[0].toFixed(1));
+        $('od-win-lab-p').setAttribute('y', pq[1].toFixed(1));
+        $('od-win-lab-p').textContent = 'P = ' + (100 * power(phiHalfDeg, deltaDeg) / pmax).toFixed(0) + '%';
         $('od-lg-density').textContent = DEMO_TEXT.lgDensity;
         $('od-lg-intensity').textContent = DEMO_TEXT.lgIntensity;
     }
@@ -421,56 +408,11 @@ function initOffsetDemo(host) {
         return { opt, cur: cp, base: bp };
     }
 
-    function drawG(phiHalfDeg, deltaDeg) {
-        const m = lambertOrder(phiHalfDeg);
-        const x0 = 70, x1 = 648, y0 = 24, y1 = 150;
-        const U = u => x0 + (u / 90) * (x1 - x0);
-        const Y = v => y1 - Math.max(0, Math.min(1, v)) * (y1 - y0);
-        const sinF = u => Math.sin(u * Math.PI / 180);
-        const cosF = u => Math.pow(Math.cos(u * Math.PI / 180), m);
-        const gF = u => sinF(u) * cosF(u);
-        let uStar = 0, gPeak = -1;
-        for (let u = 0; u <= 90; u += 0.25) {
-            const gv = gF(u);
-            if (gv > gPeak) { gPeak = gv; uStar = u; }
-        }
-        const pathFor = fn => {
-            const pts = [];
-            for (let u = 0; u <= 90; u += 1) pts.push(`${U(u).toFixed(1)},${Y(fn(u)).toFixed(1)}`);
-            return 'M ' + pts.join(' L ');
-        };
-        $('od-p-sin').setAttribute('d', pathFor(sinF));
-        $('od-p-cos').setAttribute('d', pathFor(cosF));
-        $('od-g-curve').setAttribute('d', pathFor(gF));
-        // subtle fill under g
-        const fillPts = [`M ${x0} ${y1}`];
-        for (let u = 0; u <= 90; u += 1) fillPts.push(`${U(u).toFixed(1)} ${Y(gF(u)).toFixed(1)}`);
-        fillPts.push(`${x1} ${y1}`, 'Z');
-        $('od-g-fill').setAttribute('d', fillPts.join(' '));
-        // sliding window (width φ½) starting at δ
-        const d2 = Math.min(90, deltaDeg + phiHalfDeg);
-        $('od-g-band').setAttribute('x', U(deltaDeg));
-        $('od-g-band').setAttribute('width', Math.max(0, U(d2) - U(deltaDeg)));
-        const seg = [];
-        for (let u = deltaDeg; u <= d2 + 1e-9; u += 0.5) {
-            seg.push(`${U(u).toFixed(1)},${Y(gF(u)).toFixed(1)}`);
-        }
-        $('od-g-hi').setAttribute('points', seg.join(' '));
-        $('od-g-peak-line').setAttribute('x1', U(uStar));
-        $('od-g-peak-line').setAttribute('x2', U(uStar));
-        $('od-g-edge1').setAttribute('cx', U(deltaDeg));
-        $('od-g-edge1').setAttribute('cy', Y(gF(deltaDeg)));
-        $('od-g-edge2').setAttribute('cx', U(d2));
-        $('od-g-edge2').setAttribute('cy', Y(gF(d2)));
-        $('od-g-label').textContent = DEMO_TEXT.gLabel;
-    }
-
     function update() {
         const phiHalf = 60; // fixed half-power angle
         const delta = +delIn.value;
         $('od-del-out').textContent = delta.toFixed(1) + '°';
         drawRadial(phiHalf, delta);
-        drawG(phiHalf, delta);
         const { opt, cur, base } = drawPlot(phiHalf, delta);
         const m = lambertOrder(phiHalf);
         const gain = base > 0 ? (opt.P - base) / base * 100 : 0;
