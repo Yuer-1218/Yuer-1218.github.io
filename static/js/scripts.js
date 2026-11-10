@@ -14,7 +14,11 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian 阶数',
     distCenter: '分布中心',
     beamAxis: 'Tx 光轴',
-    distFan: '节点分布（均匀 PPP）',
+    annTitle: '图示说明',
+    ann1: '节点分布（均匀 PPP）',
+    ann2: 'Tx 光束（半功率角 φ½）',
+    ann3: '偏角 δ：Tx 光轴 vs 分布中心',
+    ann4: '角度密度 ∝ sinθ',
     modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。关键假设：节点服从均匀 PPP（体积密度恒定）——对径向积分后单位立体角内密度恒定，折算到每度角度密度 ∝ sinθ（球坐标雅可比），离中心轴越远越密——这正是偏转光轴可以收集到更多节点的原因。',
     fDiscover: '发现节点',
     fEnergy: '读取能量状态',
@@ -35,7 +39,11 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian order',
     distCenter: 'Distribution center',
     beamAxis: 'Tx optical axis',
-    distFan: 'Node distribution (homogeneous PPP)',
+    annTitle: 'Annotations',
+    ann1: 'Node distribution (homogeneous PPP)',
+    ann2: 'Tx beam (half-power φ½)',
+    ann3: 'Offset δ: Tx axis vs distribution center',
+    ann4: 'Per-degree density ∝ sinθ',
     modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. Key assumption: a homogeneous PPP (constant volume density) — after marginalizing over range this gives a constant density per unit solid angle, i.e. per-degree density ∝ sinθ (the spherical Jacobian), so nodes get denser away from the center axis. That is why offsetting the axis can collect more nodes.',
     fDiscover: 'Discover node',
     fEnergy: 'Read energy state',
@@ -249,7 +257,16 @@ function initOffsetDemo(host) {
         <text id="od-dist-label" class="od-label-sm" x="0" y="0"></text>
         <text id="od-beam-label" class="od-label-sm" x="0" y="0"></text>
         <text id="od-fan-label" class="od-label-sm" x="0" y="0"></text>
-        <text id="od-distfan-label" class="od-label-sm" x="0" y="0"></text>
+        <g class="od-ann">
+          <text class="od-ann-title" x="352" y="56">${DEMO_TEXT.annTitle}</text>
+          <line class="od-ann-swatch od-swatch-dist" x1="352" y1="82" x2="378" y2="82"></line>
+          <text class="od-label-sm" x="386" y="86">${DEMO_TEXT.ann1}</text>
+          <line class="od-ann-swatch od-swatch-beam" x1="352" y1="108" x2="378" y2="108"></line>
+          <text class="od-label-sm" x="386" y="112">${DEMO_TEXT.ann2}</text>
+          <line class="od-ann-swatch od-swatch-delta" x1="352" y1="134" x2="378" y2="134"></line>
+          <text class="od-label-sm" x="386" y="138">${DEMO_TEXT.ann3}</text>
+          <text class="od-label-sm" x="352" y="170">${DEMO_TEXT.ann4}</text>
+        </g>
         <g class="od-tx">
           <circle cx="90" cy="150" r="7" class="od-tx-dot"></circle>
           <circle cx="90" cy="150" r="13" class="od-tx-ring"></circle>
@@ -349,23 +366,17 @@ function initOffsetDemo(host) {
             $('od-delta-arc').setAttribute('d', '');
             $('od-delta-label').textContent = '';
         }
-        // labels
-        const dl = polar(0, R + 48);
-        $('od-dist-label').setAttribute('x', dl[0] - 8);
-        $('od-dist-label').setAttribute('y', dl[1] + 16);
+        // labels (axis names kept clear of the annotation column on the right)
+        $('od-dist-label').setAttribute('x', 252);
+        $('od-dist-label').setAttribute('y', TX.y + 16);
         $('od-dist-label').textContent = DEMO_TEXT.distCenter;
-        const bl = polar(deltaDeg, R + 44);
-        $('od-beam-label').setAttribute('x', bl[0] - 10);
-        $('od-beam-label').setAttribute('y', bl[1] - 8);
+        $('od-beam-label').setAttribute('x', 252);
+        $('od-beam-label').setAttribute('y', TX.y - 10);
         $('od-beam-label').textContent = DEMO_TEXT.beamAxis;
         const fl = polar(deltaDeg - phiHalfDeg, R + 14);
         $('od-fan-label').setAttribute('x', fl[0] - 6);
         $('od-fan-label').setAttribute('y', fl[1] + 2);
         $('od-fan-label').textContent = 'φ½';
-        const df = polar(-DIST_MAX, R + 12);
-        $('od-distfan-label').setAttribute('x', df[0] - 10);
-        $('od-distfan-label').setAttribute('y', df[1] + 14);
-        $('od-distfan-label').textContent = DEMO_TEXT.distFan;
         // node cloud: fixed angles (independent of φ½)
         dots.forEach(({ c, p }) => {
             const ang = p.ang * Math.PI / 180;
