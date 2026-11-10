@@ -12,11 +12,8 @@ const DEMO_TEXT = LANG === 'zh' ? {
     deltaOpt: '最优偏角 δ_opt',
     gain: '相对完美对准的增益',
     mOrder: 'Lambertian 阶数',
-    annTitle: '图示说明',
-    ann1: 'sin u：节点角度密度',
-    ann2: 'cosᵐ u：Lambertian 强度',
-    ann3: 'g(u)：二者乘积（单峰）',
-    ann4: '窗口 [δ, δ+φ½] 积分 = P(δ)',
+    lgDensity: '● 节点部署（角度密度 ∝ sin u）',
+    lgIntensity: '亮度 ∝ cosᵐ u（光强）',
     gLabel: '机制：g(u) = cosᵐ(u)·sin(u) 上宽度为 φ½ 的滑动窗口',
     modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。关键假设：节点服从均匀 PPP（体积密度恒定）——对径向积分后单位立体角内密度恒定，折算到每度角度密度 ∝ sinθ（球坐标雅可比），离中心轴越远越密——这正是偏转光轴可以收集到更多节点的原因。',
     fDiscover: '发现节点',
@@ -36,11 +33,8 @@ const DEMO_TEXT = LANG === 'zh' ? {
     deltaOpt: 'Optimal offset δ_opt',
     gain: 'Gain vs perfect alignment',
     mOrder: 'Lambertian order',
-    annTitle: 'Annotations',
-    ann1: 'sin u: node angular density',
-    ann2: 'cosᵐ u: Lambertian intensity',
-    ann3: 'g(u) = product of both (single peak)',
-    ann4: 'window [δ, δ+φ½] → P(δ)',
+    lgDensity: '● node deployment (per-degree density ∝ sin u)',
+    lgIntensity: 'brightness ∝ cosᵐ u (intensity)',
     gLabel: 'Mechanism: width-φ½ window sliding over g(u) = cosᵐ(u)·sin(u)',
     modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. Key assumption: a homogeneous PPP (constant volume density) — after marginalizing over range this gives a constant density per unit solid angle, i.e. per-degree density ∝ sinθ (the spherical Jacobian), so nodes get denser away from the center axis. That is why offsetting the axis can collect more nodes.',
     fDiscover: 'Discover node',
@@ -211,55 +205,28 @@ function svgEl(tag, attrs) {
 
 /* ---------------- Offset pointing demo — paper Eq. (33) ---------------- */
 function initOffsetDemo(host) {
-    // radial schematic: Tx at the origin of an angular (polar) diagram, 0°–90°
-    const TXR = { x: 110, y: 300 };
-    const R0 = 30, RK = 200; // radial mapping r(u) = R0 + RK * value(u)
+    // (radial schematic geometry lives in drawRadial; see TXP/RMAX below)
 
     host.innerHTML = `
     <div class="demo-panel">
-      <svg class="demo-scene" viewBox="0 0 680 340" role="img" aria-label="Sliding angular window over the received-power density">
-        <line class="od-plot-axis" x1="110" y1="300" x2="366" y2="300"></line>
-        <line class="od-plot-axis" x1="110" y1="300" x2="110" y2="38"></line>
-        <path id="od-rp-arc" class="od-rp-arc" d=""></path>
-        <g class="od-tick">
-          <line x1="350" y1="300" x2="360" y2="300"></line>
-          <line x1="317.8" y1="180" x2="326.6" y2="175"></line>
-          <line x1="230" y1="92.2" x2="235" y2="83.5"></line>
-          <line x1="110" y1="60" x2="110" y2="50"></line>
-        </g>
-        <g class="od-label-sm">
-          <text x="368" y="305">0°</text>
-          <text x="334" y="172">30°</text>
-          <text x="243" y="80">60°</text>
-          <text x="110" y="40" text-anchor="middle">90°</text>
-        </g>
-        <path id="od-rp-wedge" class="od-rp-wedge" d=""></path>
-        <path id="od-rp-g" class="od-rp-g" d=""></path>
-        <line id="od-rp-edge1" class="od-rp-edge" x1="0" y1="0" x2="0" y2="0"></line>
-        <line id="od-rp-edge2" class="od-rp-edge" x1="0" y1="0" x2="0" y2="0"></line>
-        <line id="od-rp-peak" class="od-g-peak-line" x1="0" y1="0" x2="0" y2="0"></line>
-        <circle id="od-rp-dot1" class="od-g-edge" r="4" cx="0" cy="0"></circle>
-        <circle id="od-rp-dot2" class="od-g-edge" r="4" cx="0" cy="0"></circle>
-        <text id="od-rp-lab-g" class="od-label-sm" x="0" y="0">g(u)</text>
-        <text id="od-rp-lab-phi" class="od-label-sm" x="0" y="0"></text>
-        <text id="od-rp-lab-delta" class="od-delta-label" x="0" y="0"></text>
+      <svg class="demo-scene" viewBox="0 0 680 360" role="img" aria-label="Schematic: node deployment below the transmitter, light field and a sliding window">
+        <g id="od-field"></g>
+        <g id="od-dots"></g>
+        <path id="od-win" class="od-win" d=""></path>
+        <line id="od-win-e1" class="od-win-edge" x1="0" y1="0" x2="0" y2="0"></line>
+        <line id="od-win-e2" class="od-win-edge" x1="0" y1="0" x2="0" y2="0"></line>
+        <g class="od-tick" id="od-rp-ticks"></g>
+        <g class="od-label-sm" id="od-rp-ticklabels"></g>
+        <text id="od-win-lab-delta" class="od-delta-label" x="0" y="0"></text>
+        <text id="od-win-lab-phi" class="od-label-sm" x="0" y="0"></text>
+        <text id="od-lg-density" class="od-label-sm" x="18" y="26"></text>
+        <text id="od-lg-intensity" class="od-label-sm" x="662" y="26" text-anchor="end"></text>
         <g class="od-tx">
-          <circle cx="110" cy="300" r="6" class="od-tx-dot"></circle>
-          <circle cx="110" cy="300" r="11" class="od-tx-ring"></circle>
-          <path d="M 125 289 A 15 15 0 0 1 125 311" class="od-tx-wave"></path>
+          <circle cx="340" cy="46" r="6" class="od-tx-dot"></circle>
+          <circle cx="340" cy="46" r="11" class="od-tx-ring"></circle>
+          <path d="M 355 35 A 15 15 0 0 1 355 57" class="od-tx-wave"></path>
         </g>
-        <text x="110" y="322" class="od-label" text-anchor="middle">Tx</text>
-        <g class="od-ann">
-          <text class="od-ann-title" x="398" y="56">${DEMO_TEXT.annTitle}</text>
-          <line class="od-ann-swatch od-swatch-sin" x1="398" y1="82" x2="424" y2="82"></line>
-          <text class="od-label-sm" x="432" y="86">${DEMO_TEXT.ann1}</text>
-          <line class="od-ann-swatch od-swatch-cos" x1="398" y1="108" x2="424" y2="108"></line>
-          <text class="od-label-sm" x="432" y="112">${DEMO_TEXT.ann2}</text>
-          <line class="od-ann-swatch od-swatch-prod" x1="398" y1="134" x2="424" y2="134"></line>
-          <text class="od-label-sm" x="432" y="138">${DEMO_TEXT.ann3}</text>
-          <line class="od-ann-swatch od-swatch-win" x1="398" y1="164" x2="424" y2="164"></line>
-          <text class="od-label-sm" x="432" y="168">${DEMO_TEXT.ann4}</text>
-        </g>
+        <text x="340" y="22" class="od-label" text-anchor="middle">Tx</text>
       </svg>
       <div class="demo-controls">
         <label>${DEMO_TEXT.phiHalf} <input id="od-phi" type="range" min="15" max="75" value="60" step="1"><output id="od-phi-out">60°</output></label>
@@ -342,57 +309,72 @@ function initOffsetDemo(host) {
 
     function drawRadial(phiHalfDeg, deltaDeg) {
         const m = lambertOrder(phiHalfDeg);
-        const gfn = u => Math.pow(Math.cos(u * Math.PI / 180), m) * Math.sin(u * Math.PI / 180);
-        let gPeak = -1, uStar = 0;
-        for (let u = 0; u <= 90; u += 0.25) {
-            const gv = gfn(u);
-            if (gv > gPeak) { gPeak = gv; uStar = u; }
+        const TXP = { x: 340, y: 46 };
+        const RMAX = 250;
+        const pt = (deg, r) => [TXP.x + r * Math.sin(deg * Math.PI / 180), TXP.y + r * Math.cos(deg * Math.PI / 180)];
+        // light field: brightness ∝ cos^m(θ), θ measured from the vertical (downward) axis
+        const field = $('od-field');
+        field.innerHTML = '';
+        const step = 2;
+        for (let a = -90; a < 90; a += step) {
+            const mid = a + step / 2;
+            const alpha = 0.30 * Math.pow(Math.max(0, Math.cos(Math.abs(mid) * Math.PI / 180)), m);
+            if (alpha < 0.004) continue;
+            const p1 = pt(a, RMAX), p2 = pt(a + step, RMAX);
+            field.appendChild(svgEl('path', {
+                d: `M ${TXP.x} ${TXP.y} L ${p1[0].toFixed(1)} ${p1[1].toFixed(1)} A ${RMAX} ${RMAX} 0 0 1 ${p2[0].toFixed(1)} ${p2[1].toFixed(1)} Z`,
+                class: 'od-field-w',
+                opacity: alpha.toFixed(3)
+            }));
         }
-        const radius = v => R0 + RK * Math.max(0, Math.min(1, v));
-        const pt = (angDeg, r) => [
-            TXR.x + r * Math.cos(angDeg * Math.PI / 180),
-            TXR.y - r * Math.sin(angDeg * Math.PI / 180)
-        ];
-        // g profile on a common 0–1 scale (the product is honestly smaller than its factors)
-        const pts = [];
-        for (let u = 0; u <= 90; u += 1) {
-            const q = pt(u, radius(gfn(u)));
-            pts.push(`${q[0].toFixed(1)},${q[1].toFixed(1)}`);
+        // fixed node deployment (independent of φ½ and δ): per-degree density ∝ sinθ
+        const dotsG = $('od-dots');
+        if (!dotsG.dataset.built) {
+            dotsG.dataset.built = '1';
+            let seed = 421;
+            const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+            for (let i = 0; i < 72; i++) {
+                const th = Math.acos(1 - rnd()) * 180 / Math.PI; // ∝ sinθ over [0°, 90°]
+                const sign = rnd() < 0.5 ? -1 : 1;
+                const rr = 40 + rnd() * (RMAX - 56);
+                const q = pt(sign * th, rr);
+                dotsG.appendChild(svgEl('circle', {
+                    cx: q[0].toFixed(1), cy: q[1].toFixed(1),
+                    r: (1.6 + rnd() * 1.7).toFixed(1),
+                    class: 'od-node', opacity: (0.40 + rnd() * 0.45).toFixed(2)
+                }));
+            }
+            // ticks every 30° across the 180° half-plane
+            const ticks = $('od-rp-ticks'), labs = $('od-rp-ticklabels');
+            for (let a = -90; a <= 90; a += 30) {
+                const t1 = pt(a, RMAX + 6), t2 = pt(a, RMAX + 14);
+                ticks.appendChild(svgEl('line', { x1: t1[0].toFixed(1), y1: t1[1].toFixed(1), x2: t2[0].toFixed(1), y2: t2[1].toFixed(1) }));
+                const lq = pt(a, RMAX + 28);
+                const t = svgEl('text', { x: lq[0].toFixed(1), y: (lq[1] + 4).toFixed(1), 'text-anchor': 'middle' });
+                t.textContent = (a === 0 ? '0°' : (a > 0 ? '+' : '') + a + '°');
+                labs.appendChild(t);
+            }
         }
-        $('od-rp-g').setAttribute('d', 'M ' + pts.join(' L '));
-        // guide arc 0°–90°
-        const arcR = 245;
-        const a1 = pt(0, arcR), a2 = pt(90, arcR);
-        $('od-rp-arc').setAttribute('d', `M ${a1[0]} ${a1[1]} A ${arcR} ${arcR} 0 0 0 ${a2[0]} ${a2[1]}`);
-        // sliding window [δ, δ+φ½]
+        // sliding window [δ, δ+φ½] — directional offset (one side only)
         const d1 = deltaDeg, d2 = Math.min(90, deltaDeg + phiHalfDeg);
-        const w1 = pt(d1, arcR), w2 = pt(d2, arcR);
-        $('od-rp-wedge').setAttribute('d', `M ${TXR.x} ${TXR.y} L ${w1[0]} ${w1[1]} A ${arcR} ${arcR} 0 0 0 ${w2[0]} ${w2[1]} Z`);
-        // edge rays + edge dots on the g profile
-        const e1 = pt(d1, arcR), e2 = pt(d2, arcR);
-        $('od-rp-edge1').setAttribute('x1', TXR.x); $('od-rp-edge1').setAttribute('y1', TXR.y);
-        $('od-rp-edge1').setAttribute('x2', e1[0]); $('od-rp-edge1').setAttribute('y2', e1[1]);
-        $('od-rp-edge2').setAttribute('x1', TXR.x); $('od-rp-edge2').setAttribute('y1', TXR.y);
-        $('od-rp-edge2').setAttribute('x2', e2[0]); $('od-rp-edge2').setAttribute('y2', e2[1]);
-        const g1 = pt(d1, radius(gfn(d1))), g2 = pt(d2, radius(gfn(d2)));
-        $('od-rp-dot1').setAttribute('cx', g1[0]); $('od-rp-dot1').setAttribute('cy', g1[1]);
-        $('od-rp-dot2').setAttribute('cx', g2[0]); $('od-rp-dot2').setAttribute('cy', g2[1]);
-        // peak ray
-        const pk = pt(uStar, arcR);
-        $('od-rp-peak').setAttribute('x1', TXR.x); $('od-rp-peak').setAttribute('y1', TXR.y);
-        $('od-rp-peak').setAttribute('x2', pk[0]); $('od-rp-peak').setAttribute('y2', pk[1]);
-        // labels
-        const gp = pt(uStar, radius(gPeak) + 16);
-        $('od-rp-lab-g').setAttribute('x', gp[0] - 8);
-        $('od-rp-lab-g').setAttribute('y', gp[1] + 4);
-        const dl1 = pt(d1, 74);
-        $('od-rp-lab-delta').setAttribute('x', dl1[0] - 2);
-        $('od-rp-lab-delta').setAttribute('y', dl1[1] + 13);
-        $('od-rp-lab-delta').textContent = 'δ';
-        const midLbl = pt(d1 + (d2 - d1) / 2, arcR - 45);
-        $('od-rp-lab-phi').setAttribute('x', midLbl[0]);
-        $('od-rp-lab-phi').setAttribute('y', midLbl[1] + 4);
-        $('od-rp-lab-phi').textContent = 'φ½';
+        const RW = RMAX + 8;
+        const w1 = pt(d1, RW), w2 = pt(d2, RW);
+        $('od-win').setAttribute('d', `M ${TXP.x} ${TXP.y} L ${w1[0].toFixed(1)} ${w1[1].toFixed(1)} A ${RW} ${RW} 0 0 1 ${w2[0].toFixed(1)} ${w2[1].toFixed(1)} Z`);
+        const e1 = pt(d1, RW + 10), e2 = pt(d2, RW + 10);
+        $('od-win-e1').setAttribute('x1', TXP.x); $('od-win-e1').setAttribute('y1', TXP.y);
+        $('od-win-e1').setAttribute('x2', e1[0].toFixed(1)); $('od-win-e1').setAttribute('y2', e1[1].toFixed(1));
+        $('od-win-e2').setAttribute('x1', TXP.x); $('od-win-e2').setAttribute('y1', TXP.y);
+        $('od-win-e2').setAttribute('x2', e2[0].toFixed(1)); $('od-win-e2').setAttribute('y2', e2[1].toFixed(1));
+        const dl = pt(d1, RW - 42);
+        $('od-win-lab-delta').setAttribute('x', dl[0].toFixed(1));
+        $('od-win-lab-delta').setAttribute('y', dl[1].toFixed(1));
+        $('od-win-lab-delta').textContent = 'δ';
+        const pl = pt(d1 + (d2 - d1) / 2, RW - 26);
+        $('od-win-lab-phi').setAttribute('x', pl[0].toFixed(1));
+        $('od-win-lab-phi').setAttribute('y', pl[1].toFixed(1));
+        $('od-win-lab-phi').textContent = 'φ½';
+        $('od-lg-density').textContent = DEMO_TEXT.lgDensity;
+        $('od-lg-intensity').textContent = DEMO_TEXT.lgIntensity;
     }
 
     function drawPlot(phiHalfDeg, deltaDeg) {

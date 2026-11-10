@@ -586,6 +586,43 @@ html[data-theme="dark"] .od-g-peak-line {
 
 /* radial schematic */
 
+.od-field-w {
+    fill: #2aa7c0;
+}
+
+.od-win {
+    fill: rgba(112, 30, 94, 0.04);
+    stroke: rgba(112, 30, 94, 0.50);
+    stroke-dasharray: 5 4;
+    stroke-width: 1.6;
+}
+
+.od-win-edge {
+    stroke: rgba(112, 30, 94, 0.55);
+    stroke-width: 1.1;
+}
+
+.od-node {
+    fill: #44545f;
+}
+
+html[data-theme="dark"] .od-field-w {
+    fill: #55d6e8;
+}
+
+html[data-theme="dark"] .od-win {
+    fill: rgba(217, 168, 207, 0.05);
+    stroke: rgba(217, 168, 207, 0.50);
+}
+
+html[data-theme="dark"] .od-win-edge {
+    stroke: rgba(217, 168, 207, 0.55);
+}
+
+html[data-theme="dark"] .od-node {
+    fill: #9fb2c0;
+}
+
 .od-rp-arc {
     fill: none;
     stroke: rgba(0, 0, 0, 0.15);
