@@ -20,7 +20,6 @@ const DEMO_TEXT = LANG === 'zh' ? {
     gainNow: '当前 δ 的增益',
     axisLabel: '光轴',
     dLabel: '半径 d（固定）',
-    statNodes: '采集段内节点',
     modelNote: '半球截面示意：所有节点都位于同一半径 d 的球面上（对应式 (33) 中链路距离 L 为固定参数）。节点位置在立体角上均匀 ⇒ 每度节点数 ∝ sin u（u 为相对光轴的张角；球面上角度 u 处的环带面积 ∝ sin u），因此离光轴越远节点越密。每节点接收光强 ∝ cosᵐ u，故单位角度的贡献 g(u) = cosᵐ u · sin u 在 u* = arctan(1/√m) 处最大。采集弧以接收端指向 δ 为中心、半开角 φ½（即发射端主瓣）；论文式 (33) 对应主瓣远半段 [δ, δ+φ½] 的积分：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)。',
     fDiscover: '发现节点',
     fEnergy: '读取能量状态',
@@ -47,7 +46,6 @@ const DEMO_TEXT = LANG === 'zh' ? {
     gainNow: 'gain at current δ',
     axisLabel: 'optical axis',
     dLabel: 'radius d (fixed)',
-    statNodes: 'nodes in collected arc',
     modelNote: 'Hemisphere cross-section: every node lies on the same sphere of radius d (the link distance L is a fixed parameter in Eq. (33)). Node positions are uniform in solid angle, so the per-degree node count is ∝ sin u (u is the angle from the optical axis; a spherical ring at angle u has area ∝ sin u) — nodes are denser away from the axis. Each node receives intensity ∝ cosᵐ u, so the contribution per unit angle, g(u) = cosᵐ u · sin u, peaks at u* = arctan(1/√m). The collected arc is the Tx main lobe (half-angle φ½), centred on the receiver pointing direction δ; Eq. (33) is its far half, the integral of g(u) over [δ, δ+φ½]: P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½) with m = −ln2 / ln cos(φ½).',
     fDiscover: 'Discover node',
     fEnergy: 'Read energy state',
@@ -265,7 +263,6 @@ function initOffsetDemo(host) {
         <line id="od-base-line" class="od-base-line" x1="70" y1="51" x2="648" y2="51"></line>
         <line id="od-opt-line" class="od-opt-line" x1="0" y1="16" x2="0" y2="122"></line>
         <circle id="od-opt-dot" class="od-opt-dot" r="4.5" cx="0" cy="0"></circle>
-        <text id="od-opt-label" class="od-label-opt" x="0" y="0"></text>
         <line id="od-del-line" class="od-del-line" x1="0" y1="16" x2="0" y2="122"></line>
         <circle id="od-del-dot" class="od-del-dot" r="4.5" cx="0" cy="0"></circle>
       </svg>
@@ -393,10 +390,6 @@ function initOffsetDemo(host) {
         $('od-opt-line').setAttribute('x2', ox);
         $('od-opt-dot').setAttribute('cx', ox);
         $('od-opt-dot').setAttribute('cy', oy);
-        const optLab = $('od-opt-label');
-        optLab.setAttribute('x', Math.min(ox + 10, x1 - 130));
-        optLab.setAttribute('y', Math.max(oy - 8, 26));
-        optLab.textContent = 'δ_opt = ' + opt.delta.toFixed(1) + '° (+' + ((opt.P / p0 - 1) * 100).toFixed(1) + '%)';
         const cx = P2x(deltaDeg), cy = P2y(power(phiHalfDeg, deltaDeg) / p0);
         $('od-del-line').setAttribute('x1', cx);
         $('od-del-line').setAttribute('x2', cx);
@@ -434,12 +427,10 @@ function initOffsetDemo(host) {
         $('od-mid-ray').setAttribute('x2', delta > 0.5 ? f1(mr[0]) : TXP.x);
         $('od-mid-ray').setAttribute('y2', delta > 0.5 ? f1(mr[1]) : TXP.y);
         // highlight the nodes inside the collected arc
-        let inBand = 0;
         dotEls.forEach(({ el, ang }) => {
             const isIn = ang >= d1 - 0.25 && ang <= d2 + 0.25;
             el.classList.toggle('in-win', isIn);
             el.setAttribute('opacity', isIn ? '1' : '0.40');
-            if (isIn) inBand++;
         });
         drawPlot(phiHalf, delta);
         const opt = optimum(phiHalf);
@@ -450,8 +441,7 @@ function initOffsetDemo(host) {
           <div class="stat"><span class="stat-k">${DEMO_TEXT.mOrder}</span><span class="stat-v">m = ${m.toFixed(2)}</span></div>
           <div class="stat"><span class="stat-k">${DEMO_TEXT.deltaOpt}</span><span class="stat-v">${opt.delta.toFixed(1)}°</span></div>
           <div class="stat stat-gain"><span class="stat-k">${DEMO_TEXT.gainNow}</span><span class="stat-v">${sgn(gainNow)}</span></div>
-          <div class="stat"><span class="stat-k">${DEMO_TEXT.gain}</span><span class="stat-v">${sgn(gain)}</span></div>
-          <div class="stat"><span class="stat-k">${DEMO_TEXT.statNodes}</span><span class="stat-v">${inBand} / ${dotEls.length}</span></div>`;
+          <div class="stat"><span class="stat-k">${DEMO_TEXT.gain}</span><span class="stat-v">${sgn(gain)}</span></div>`;
     }
 
     buildStatic(45);
