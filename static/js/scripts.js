@@ -217,21 +217,29 @@ function initOffsetDemo(host) {
 
     host.innerHTML = `
     <div class="demo-panel">
-      <svg class="demo-scene" viewBox="0 0 680 340" role="img" aria-label="Angular density and intensity profiles with a sliding window">
-        <line class="od-plot-axis" x1="110" y1="300" x2="362" y2="300"></line>
-        <line class="od-plot-axis" x1="110" y1="300" x2="110" y2="42"></line>
+      <svg class="demo-scene" viewBox="0 0 680 340" role="img" aria-label="Sliding angular window over the received-power density">
+        <line class="od-plot-axis" x1="110" y1="300" x2="366" y2="300"></line>
+        <line class="od-plot-axis" x1="110" y1="300" x2="110" y2="38"></line>
         <path id="od-rp-arc" class="od-rp-arc" d=""></path>
+        <g class="od-tick">
+          <line x1="350" y1="300" x2="360" y2="300"></line>
+          <line x1="317.8" y1="180" x2="326.6" y2="175"></line>
+          <line x1="230" y1="92.2" x2="235" y2="83.5"></line>
+          <line x1="110" y1="60" x2="110" y2="50"></line>
+        </g>
+        <g class="od-label-sm">
+          <text x="368" y="305">0°</text>
+          <text x="334" y="172">30°</text>
+          <text x="243" y="80">60°</text>
+          <text x="110" y="40" text-anchor="middle">90°</text>
+        </g>
         <path id="od-rp-wedge" class="od-rp-wedge" d=""></path>
-        <path id="od-rp-sin" class="od-rp-sin" d=""></path>
-        <path id="od-rp-cos" class="od-rp-cos" d=""></path>
         <path id="od-rp-g" class="od-rp-g" d=""></path>
         <line id="od-rp-edge1" class="od-rp-edge" x1="0" y1="0" x2="0" y2="0"></line>
         <line id="od-rp-edge2" class="od-rp-edge" x1="0" y1="0" x2="0" y2="0"></line>
         <line id="od-rp-peak" class="od-g-peak-line" x1="0" y1="0" x2="0" y2="0"></line>
         <circle id="od-rp-dot1" class="od-g-edge" r="4" cx="0" cy="0"></circle>
         <circle id="od-rp-dot2" class="od-g-edge" r="4" cx="0" cy="0"></circle>
-        <text id="od-rp-lab-sin" class="od-label-sm" x="0" y="0">sin u</text>
-        <text id="od-rp-lab-cos" class="od-label-sm" x="0" y="0">cosᵐ u</text>
         <text id="od-rp-lab-g" class="od-label-sm" x="0" y="0">g(u)</text>
         <text id="od-rp-lab-phi" class="od-label-sm" x="0" y="0"></text>
         <text id="od-rp-lab-delta" class="od-delta-label" x="0" y="0"></text>
@@ -257,18 +265,32 @@ function initOffsetDemo(host) {
         <label>${DEMO_TEXT.phiHalf} <input id="od-phi" type="range" min="15" max="75" value="60" step="1"><output id="od-phi-out">60°</output></label>
         <label>${DEMO_TEXT.delta} <input id="od-del" type="range" min="0" max="30" value="0" step="0.5"><output id="od-del-out">0°</output></label>
       </div>
-      <svg class="demo-plot" viewBox="0 0 680 170" role="img" aria-label="Sliding window over g(u)">
+      <svg class="demo-plot" viewBox="0 0 680 190" role="img" aria-label="Density, intensity and their product with a sliding window">
         <text id="od-g-label" class="od-plot-tick" x="70" y="12"></text>
-        <line class="od-plot-axis" x1="70" y1="132" x2="648" y2="132"></line>
-        <line class="od-plot-axis" x1="70" y1="24" x2="70" y2="132"></line>
-        <text class="od-plot-tick" x="70" y="152" text-anchor="middle">0°</text>
-        <text class="od-plot-tick" x="262.7" y="152" text-anchor="middle">30°</text>
-        <text class="od-plot-tick" x="455.3" y="152" text-anchor="middle">60°</text>
-        <text class="od-plot-tick" x="648" y="152" text-anchor="middle">90°</text>
-        <rect id="od-g-band" x="0" y="24" width="0" height="108" class="od-g-band"></rect>
+        <line class="od-plot-axis" x1="70" y1="150" x2="648" y2="150"></line>
+        <line class="od-plot-axis" x1="70" y1="24" x2="70" y2="150"></line>
+        <g class="od-tick">
+          <line x1="262.7" y1="150" x2="262.7" y2="156"></line>
+          <line x1="455.3" y1="150" x2="455.3" y2="156"></line>
+          <line x1="648" y1="150" x2="648" y2="156"></line>
+          <line x1="70" y1="87" x2="64" y2="87"></line>
+          <line x1="70" y1="24" x2="64" y2="24"></line>
+        </g>
+        <text class="od-plot-tick" x="70" y="170" text-anchor="middle">0°</text>
+        <text class="od-plot-tick" x="262.7" y="170" text-anchor="middle">30°</text>
+        <text class="od-plot-tick" x="455.3" y="170" text-anchor="middle">60°</text>
+        <text class="od-plot-tick" x="648" y="170" text-anchor="middle">90°</text>
+        <text class="od-plot-tick" x="58" y="28" text-anchor="end">1</text>
+        <text class="od-plot-tick" x="58" y="91" text-anchor="end">.5</text>
+        <text class="od-plot-tick" x="58" y="154" text-anchor="end">0</text>
+        <text class="od-plot-tick" x="658" y="146">u</text>
+        <rect id="od-g-band" x="0" y="24" width="0" height="126" class="od-g-band"></rect>
+        <path id="od-g-fill" class="od-g-fill" d=""></path>
+        <path id="od-p-sin" class="od-rp-sin" d=""></path>
+        <path id="od-p-cos" class="od-rp-cos" d=""></path>
         <path id="od-g-curve" class="od-g-curve" d=""></path>
         <polyline id="od-g-hi" class="od-g-hi" points=""></polyline>
-        <line id="od-g-peak-line" class="od-g-peak-line" x1="0" y1="24" x2="0" y2="132"></line>
+        <line id="od-g-peak-line" class="od-g-peak-line" x1="0" y1="24" x2="0" y2="150"></line>
         <circle id="od-g-edge1" class="od-g-edge" r="4" cx="0" cy="0"></circle>
         <circle id="od-g-edge2" class="od-g-edge" r="4" cx="0" cy="0"></circle>
       </svg>
@@ -321,28 +343,23 @@ function initOffsetDemo(host) {
     function drawRadial(phiHalfDeg, deltaDeg) {
         const m = lambertOrder(phiHalfDeg);
         const gfn = u => Math.pow(Math.cos(u * Math.PI / 180), m) * Math.sin(u * Math.PI / 180);
-        let gmax = 1e-9, uStar = 0;
-        for (let u = 0; u <= 90; u += 0.5) {
+        let gPeak = -1, uStar = 0;
+        for (let u = 0; u <= 90; u += 0.25) {
             const gv = gfn(u);
-            if (gv > gmax) { gmax = gv; uStar = u; }
+            if (gv > gPeak) { gPeak = gv; uStar = u; }
         }
-        const radius = v => R0 + RK * Math.max(0, v);
+        const radius = v => R0 + RK * Math.max(0, Math.min(1, v));
         const pt = (angDeg, r) => [
             TXR.x + r * Math.cos(angDeg * Math.PI / 180),
             TXR.y - r * Math.sin(angDeg * Math.PI / 180)
         ];
-        const pathFor = fn => {
-            const pts = [];
-            for (let u = 0; u <= 90; u += 1) {
-                const q = pt(u, radius(fn(u)));
-                pts.push(`${q[0].toFixed(1)},${q[1].toFixed(1)}`);
-            }
-            return 'M ' + pts.join(' L ');
-        };
-        // density, intensity and their product (all normalized to their own scale)
-        $('od-rp-sin').setAttribute('d', pathFor(u => Math.sin(u * Math.PI / 180)));
-        $('od-rp-cos').setAttribute('d', pathFor(u => Math.pow(Math.cos(u * Math.PI / 180), m)));
-        $('od-rp-g').setAttribute('d', pathFor(u => gfn(u) / gmax));
+        // g profile on a common 0–1 scale (the product is honestly smaller than its factors)
+        const pts = [];
+        for (let u = 0; u <= 90; u += 1) {
+            const q = pt(u, radius(gfn(u)));
+            pts.push(`${q[0].toFixed(1)},${q[1].toFixed(1)}`);
+        }
+        $('od-rp-g').setAttribute('d', 'M ' + pts.join(' L '));
         // guide arc 0°–90°
         const arcR = 245;
         const a1 = pt(0, arcR), a2 = pt(90, arcR);
@@ -357,7 +374,7 @@ function initOffsetDemo(host) {
         $('od-rp-edge1').setAttribute('x2', e1[0]); $('od-rp-edge1').setAttribute('y2', e1[1]);
         $('od-rp-edge2').setAttribute('x1', TXR.x); $('od-rp-edge2').setAttribute('y1', TXR.y);
         $('od-rp-edge2').setAttribute('x2', e2[0]); $('od-rp-edge2').setAttribute('y2', e2[1]);
-        const g1 = pt(d1, radius(gfn(d1) / gmax)), g2 = pt(d2, radius(gfn(d2) / gmax));
+        const g1 = pt(d1, radius(gfn(d1))), g2 = pt(d2, radius(gfn(d2)));
         $('od-rp-dot1').setAttribute('cx', g1[0]); $('od-rp-dot1').setAttribute('cy', g1[1]);
         $('od-rp-dot2').setAttribute('cx', g2[0]); $('od-rp-dot2').setAttribute('cy', g2[1]);
         // peak ray
@@ -365,20 +382,14 @@ function initOffsetDemo(host) {
         $('od-rp-peak').setAttribute('x1', TXR.x); $('od-rp-peak').setAttribute('y1', TXR.y);
         $('od-rp-peak').setAttribute('x2', pk[0]); $('od-rp-peak').setAttribute('y2', pk[1]);
         // labels
-        const lbl = (id, ang, val, dx, dy) => {
-            const q = pt(ang, radius(val) + 14);
-            const el = $(id);
-            el.setAttribute('x', q[0] + dx);
-            el.setAttribute('y', q[1] + dy);
-        };
-        lbl('od-rp-lab-sin', 62, Math.sin(62 * Math.PI / 180), -8, 2);
-        lbl('od-rp-lab-cos', 14, Math.pow(Math.cos(14 * Math.PI / 180), m), 8, 2);
-        lbl('od-rp-lab-g', uStar, gfn(uStar) / gmax, -2, -10);
+        const gp = pt(uStar, radius(gPeak) + 16);
+        $('od-rp-lab-g').setAttribute('x', gp[0] - 8);
+        $('od-rp-lab-g').setAttribute('y', gp[1] + 4);
         const dl1 = pt(d1, 74);
         $('od-rp-lab-delta').setAttribute('x', dl1[0] - 2);
         $('od-rp-lab-delta').setAttribute('y', dl1[1] + 13);
         $('od-rp-lab-delta').textContent = 'δ';
-        const midLbl = pt(d1 + (d2 - d1) / 2, arcR + 14);
+        const midLbl = pt(d1 + (d2 - d1) / 2, arcR - 45);
         $('od-rp-lab-phi').setAttribute('x', midLbl[0]);
         $('od-rp-lab-phi').setAttribute('y', midLbl[1] + 4);
         $('od-rp-lab-phi').textContent = 'φ½';
@@ -426,33 +437,45 @@ function initOffsetDemo(host) {
 
     function drawG(phiHalfDeg, deltaDeg) {
         const m = lambertOrder(phiHalfDeg);
-        const x0 = 70, x1 = 648, y0 = 24, y1 = 132;
+        const x0 = 70, x1 = 648, y0 = 24, y1 = 150;
         const U = u => x0 + (u / 90) * (x1 - x0);
-        const gfn = u => Math.pow(Math.cos(u * Math.PI / 180), m) * Math.sin(u * Math.PI / 180);
-        let gmax = 1e-9, uStar = 0;
-        for (let u = 0; u <= 90; u += 0.5) {
-            const gv = gfn(u);
-            if (gv > gmax) { gmax = gv; uStar = u; }
+        const Y = v => y1 - Math.max(0, Math.min(1, v)) * (y1 - y0);
+        const sinF = u => Math.sin(u * Math.PI / 180);
+        const cosF = u => Math.pow(Math.cos(u * Math.PI / 180), m);
+        const gF = u => sinF(u) * cosF(u);
+        let uStar = 0, gPeak = -1;
+        for (let u = 0; u <= 90; u += 0.25) {
+            const gv = gF(u);
+            if (gv > gPeak) { gPeak = gv; uStar = u; }
         }
-        const G = u => y1 - (gfn(u) / gmax) * (y1 - y0);
-        const pts = [];
-        for (let u = 0; u <= 90; u += 1) pts.push(`${U(u).toFixed(1)},${G(u).toFixed(1)}`);
-        $('od-g-curve').setAttribute('d', 'M ' + pts.join(' L '));
+        const pathFor = fn => {
+            const pts = [];
+            for (let u = 0; u <= 90; u += 1) pts.push(`${U(u).toFixed(1)},${Y(fn(u)).toFixed(1)}`);
+            return 'M ' + pts.join(' L ');
+        };
+        $('od-p-sin').setAttribute('d', pathFor(sinF));
+        $('od-p-cos').setAttribute('d', pathFor(cosF));
+        $('od-g-curve').setAttribute('d', pathFor(gF));
+        // subtle fill under g
+        const fillPts = [`M ${x0} ${y1}`];
+        for (let u = 0; u <= 90; u += 1) fillPts.push(`${U(u).toFixed(1)} ${Y(gF(u)).toFixed(1)}`);
+        fillPts.push(`${x1} ${y1}`, 'Z');
+        $('od-g-fill').setAttribute('d', fillPts.join(' '));
         // sliding window (width φ½) starting at δ
         const d2 = Math.min(90, deltaDeg + phiHalfDeg);
         $('od-g-band').setAttribute('x', U(deltaDeg));
         $('od-g-band').setAttribute('width', Math.max(0, U(d2) - U(deltaDeg)));
         const seg = [];
         for (let u = deltaDeg; u <= d2 + 1e-9; u += 0.5) {
-            seg.push(`${U(u).toFixed(1)},${G(u).toFixed(1)}`);
+            seg.push(`${U(u).toFixed(1)},${Y(gF(u)).toFixed(1)}`);
         }
         $('od-g-hi').setAttribute('points', seg.join(' '));
         $('od-g-peak-line').setAttribute('x1', U(uStar));
         $('od-g-peak-line').setAttribute('x2', U(uStar));
         $('od-g-edge1').setAttribute('cx', U(deltaDeg));
-        $('od-g-edge1').setAttribute('cy', G(deltaDeg));
+        $('od-g-edge1').setAttribute('cy', Y(gF(deltaDeg)));
         $('od-g-edge2').setAttribute('cx', U(d2));
-        $('od-g-edge2').setAttribute('cy', G(d2));
+        $('od-g-edge2').setAttribute('cy', Y(gF(d2)));
         $('od-g-label').textContent = DEMO_TEXT.gLabel;
     }
 

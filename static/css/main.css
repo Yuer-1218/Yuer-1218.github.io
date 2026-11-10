@@ -454,7 +454,12 @@ pre.bibtex {
 }
 
 .od-plot-axis {
-    stroke: rgba(0, 0, 0, 0.12);
+    stroke: rgba(0, 0, 0, 0.30);
+    stroke-width: 1.2;
+}
+
+.od-tick line {
+    stroke: rgba(0, 0, 0, 0.30);
     stroke-width: 1;
 }
 
@@ -469,8 +474,12 @@ pre.bibtex {
 
 .od-g-curve {
     fill: none;
-    stroke: rgba(42, 167, 192, 0.35);
-    stroke-width: 1.5;
+    stroke: #2aa7c0;
+    stroke-width: 2.4;
+}
+
+.od-g-fill {
+    fill: rgba(42, 167, 192, 0.08);
 }
 
 .od-g-hi {
@@ -494,7 +503,7 @@ html[data-theme="dark"] .od-g-band {
 }
 
 html[data-theme="dark"] .od-g-curve {
-    stroke: rgba(85, 214, 232, 0.35);
+    stroke: #55d6e8;
 }
 
 html[data-theme="dark"] .od-g-hi {
@@ -885,7 +894,15 @@ html[data-theme="dark"] .od-tx-wave {
 }
 
 html[data-theme="dark"] .od-plot-axis {
-    stroke: rgba(255, 255, 255, 0.16);
+    stroke: rgba(255, 255, 255, 0.30);
+}
+
+html[data-theme="dark"] .od-tick line {
+    stroke: rgba(255, 255, 255, 0.30);
+}
+
+html[data-theme="dark"] .od-g-fill {
+    fill: rgba(85, 214, 232, 0.08);
 }
 
 html[data-theme="dark"] .od-plot-tick {
