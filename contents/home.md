@@ -24,4 +24,4 @@ Hi, everyone! I'm **Qiyu (Yusuf) Ma**. I received my B.E. in Electronic Engineer
 #### **Extra-Curricular Activities**
 * **Minister**, Tsinghua University Student Billiard Association.
 * **Practice Detachment Member**, "Future Communication" (Shenzhen, Shanghai, and Chengdu).
-* **Content Group Leader**, "Tianfu Core" Electronic Industry Research Detachment (Second Prize).
+* **Content Group Leader**, "Tianfu Chip Exploration" Electronic Industry Research Detachment (Second Prize).
