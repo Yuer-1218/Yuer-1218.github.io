@@ -14,7 +14,8 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian 阶数',
     distCenter: '分布中心',
     beamAxis: 'Tx 光轴',
-    modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。最优偏角 δ_opt > 0：用中心峰值辐照度换取孔径上更均匀的光束区域，使期望接收功率最大化。',
+    distFan: '节点分布（立体角均匀）',
+    modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。关键假设：节点在立体角上均匀分布（单位立体角密度恒定，折算到每度角度密度 ∝ sinθ，离中心轴越远越密）——这正是偏转光轴可以收集到更多节点的原因。',
     fDiscover: '发现节点',
     fEnergy: '读取能量状态',
     fPre: '预充电',
@@ -34,7 +35,8 @@ const DEMO_TEXT = LANG === 'zh' ? {
     mOrder: 'Lambertian order',
     distCenter: 'Distribution center',
     beamAxis: 'Tx optical axis',
-    modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. The optimal offset δ_opt > 0 trades center irradiance for a more uniform beam region over the aperture.',
+    distFan: 'Node distribution (uniform over solid angle)',
+    modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. Key assumption: nodes are uniform over solid angle (constant per unit solid angle, so the per-degree density ∝ sinθ and grows away from the center axis) — this is why offsetting the axis collects more nodes.',
     fDiscover: 'Discover node',
     fEnergy: 'Read energy state',
     fPre: 'Preemptive charging',
@@ -206,21 +208,26 @@ function initOffsetDemo(host) {
     const TX = { x: 90, y: 150 };
     const R = 150; // fan radius (fixed so the scene never gets clipped)
 
-    // deterministic pseudo-random node cloud inside the distribution fan
+    // deterministic node cloud — FIXED deployment, independent of the beam width.
+    // Uniform over solid angle ⇒ per-degree density ∝ sinθ (sparser near the axis).
+    const DIST_MAX = 80; // fixed angular extent of the distribution (degrees, half-fan)
     function cloudPoints(n) {
         let seed = 421;
         const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+        const cosMax = Math.cos(DIST_MAX * Math.PI / 180);
         const pts = [];
         for (let i = 0; i < n; i++) {
-            const t = rnd() * 2 - 1;          // angle fraction in [-1, 1] of the half-angle
-            const rr = 0.18 + rnd() * 0.80;   // distance fraction
-            const s = 1.6 + rnd() * 1.8;      // dot radius
-            const o = 0.25 + rnd() * 0.45;    // opacity
-            pts.push({ t, rr, s, o });
+            const u = rnd();
+            const ang = Math.acos(1 - u * (1 - cosMax)) * 180 / Math.PI; // density ∝ sinθ
+            const sign = rnd() < 0.5 ? -1 : 1;
+            const rr = 0.15 + rnd() * 0.85;
+            const s = 1.6 + rnd() * 1.8;
+            const o = 0.25 + rnd() * 0.45;
+            pts.push({ ang: sign * ang, rr, s, o });
         }
         return pts;
     }
-    const cloud = cloudPoints(46);
+    const cloud = cloudPoints(56);
 
     host.innerHTML = `
     <div class="demo-panel">
@@ -242,6 +249,7 @@ function initOffsetDemo(host) {
         <text id="od-dist-label" class="od-label-sm" x="0" y="0"></text>
         <text id="od-beam-label" class="od-label-sm" x="0" y="0"></text>
         <text id="od-fan-label" class="od-label-sm" x="0" y="0"></text>
+        <text id="od-distfan-label" class="od-label-sm" x="0" y="0"></text>
         <g class="od-tx">
           <circle cx="90" cy="150" r="7" class="od-tx-dot"></circle>
           <circle cx="90" cy="150" r="13" class="od-tx-ring"></circle>
@@ -311,11 +319,13 @@ function initOffsetDemo(host) {
 
     function drawScene(phiHalfDeg, deltaDeg) {
         // fixed radius → constant scene size, nothing gets clipped
-        const s1 = polar(-phiHalfDeg, R), s2 = polar(phiHalfDeg, R);
+        // node distribution sector: FIXED ±DIST_MAX, independent of the beam width
+        const s1 = polar(-DIST_MAX, R), s2 = polar(DIST_MAX, R);
         $('od-dist').setAttribute('d', `M ${TX.x} ${TX.y} L ${s1[0]} ${s1[1]} A ${R} ${R} 0 0 1 ${s2[0]} ${s2[1]} Z`);
+        // beam sector: half-power angle φ½, axis offset δ from the distribution center
         const b1 = polar(deltaDeg - phiHalfDeg, R), b2 = polar(deltaDeg + phiHalfDeg, R);
         $('od-beam').setAttribute('d', `M ${TX.x} ${TX.y} L ${b1[0]} ${b1[1]} A ${R} ${R} 0 0 1 ${b2[0]} ${b2[1]} Z`);
-        // axes: distribution center axis vs Tx optical axis
+        // axes: distribution-center axis vs Tx optical axis
         const da = polar(0, R + 24);
         $('od-dist-axis').setAttribute('x1', TX.x);
         $('od-dist-axis').setAttribute('y1', TX.y);
@@ -348,13 +358,17 @@ function initOffsetDemo(host) {
         $('od-beam-label').setAttribute('x', bl[0] - 10);
         $('od-beam-label').setAttribute('y', bl[1] - 8);
         $('od-beam-label').textContent = DEMO_TEXT.beamAxis;
-        const fl = polar(-phiHalfDeg, R + 16);
+        const fl = polar(deltaDeg - phiHalfDeg, R + 14);
         $('od-fan-label').setAttribute('x', fl[0] - 6);
         $('od-fan-label').setAttribute('y', fl[1] + 2);
         $('od-fan-label').textContent = 'φ½';
-        // node cloud inside the distribution fan
+        const df = polar(-DIST_MAX, R + 12);
+        $('od-distfan-label').setAttribute('x', df[0] - 10);
+        $('od-distfan-label').setAttribute('y', df[1] + 14);
+        $('od-distfan-label').textContent = DEMO_TEXT.distFan;
+        // node cloud: fixed angles (independent of φ½)
         dots.forEach(({ c, p }) => {
-            const ang = p.t * phiHalfDeg * Math.PI / 180;
+            const ang = p.ang * Math.PI / 180;
             const d = 26 + p.rr * (R - 30);
             c.setAttribute('cx', TX.x + d * Math.cos(ang));
             c.setAttribute('cy', TX.y + d * Math.sin(ang));
