@@ -19,6 +19,7 @@ const DEMO_TEXT = LANG === 'zh' ? {
     ann2: 'Tx 光束（半功率角 φ½）',
     ann3: '偏角 δ：Tx 光轴 vs 分布中心',
     ann4: '角度密度 ∝ sinθ',
+    gLabel: '机制：g(u) = cosᵐ(u)·sin(u) 上宽度为 φ½ 的滑动窗口',
     modelNote: '随机节点/朝向模型下的期望接收功率（论文式 33）：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)，δ 为 Tx 光轴与节点分布中心之间的夹角，且 δ+φ½ ≤ 90°。关键假设：节点服从均匀 PPP（体积密度恒定）——对径向积分后单位立体角内密度恒定，折算到每度角度密度 ∝ sinθ（球坐标雅可比），离中心轴越远越密——这正是偏转光轴可以收集到更多节点的原因。',
     fDiscover: '发现节点',
     fEnergy: '读取能量状态',
@@ -44,6 +45,7 @@ const DEMO_TEXT = LANG === 'zh' ? {
     ann2: 'Tx beam (half-power φ½)',
     ann3: 'Offset δ: Tx axis vs distribution center',
     ann4: 'Per-degree density ∝ sinθ',
+    gLabel: 'Mechanism: width-φ½ window sliding over g(u) = cosᵐ(u)·sin(u)',
     modelNote: 'Expected received power under the random node/orientation model, Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½), with m = −ln2 / ln cos(φ½); δ is the angle between the Tx optical axis and the node-distribution center, and δ+φ½ ≤ 90°. Key assumption: a homogeneous PPP (constant volume density) — after marginalizing over range this gives a constant density per unit solid angle, i.e. per-degree density ∝ sinθ (the spherical Jacobian), so nodes get denser away from the center axis. That is why offsetting the axis can collect more nodes.',
     fDiscover: 'Discover node',
     fEnergy: 'Read energy state',
@@ -279,6 +281,21 @@ function initOffsetDemo(host) {
         <label>${DEMO_TEXT.phiHalf} <input id="od-phi" type="range" min="15" max="75" value="60" step="1"><output id="od-phi-out">60°</output></label>
         <label>${DEMO_TEXT.delta} <input id="od-del" type="range" min="0" max="30" value="0" step="0.5"><output id="od-del-out">0°</output></label>
       </div>
+      <svg class="demo-plot" viewBox="0 0 680 170" role="img" aria-label="Sliding window over g(u)">
+        <text id="od-g-label" class="od-plot-tick" x="70" y="12"></text>
+        <line class="od-plot-axis" x1="70" y1="132" x2="648" y2="132"></line>
+        <line class="od-plot-axis" x1="70" y1="24" x2="70" y2="132"></line>
+        <text class="od-plot-tick" x="70" y="152" text-anchor="middle">0°</text>
+        <text class="od-plot-tick" x="262.7" y="152" text-anchor="middle">30°</text>
+        <text class="od-plot-tick" x="455.3" y="152" text-anchor="middle">60°</text>
+        <text class="od-plot-tick" x="648" y="152" text-anchor="middle">90°</text>
+        <rect id="od-g-band" x="0" y="24" width="0" height="108" class="od-g-band"></rect>
+        <path id="od-g-curve" class="od-g-curve" d=""></path>
+        <polyline id="od-g-hi" class="od-g-hi" points=""></polyline>
+        <line id="od-g-peak-line" class="od-g-peak-line" x1="0" y1="24" x2="0" y2="132"></line>
+        <circle id="od-g-edge1" class="od-g-edge" r="4" cx="0" cy="0"></circle>
+        <circle id="od-g-edge2" class="od-g-edge" r="4" cx="0" cy="0"></circle>
+      </svg>
       <svg class="demo-plot" viewBox="0 0 680 150" role="img" aria-label="Normalized received power versus offset">
         <line class="od-plot-axis" x1="70" y1="122" x2="648" y2="122"></line>
         <line class="od-plot-axis" x1="70" y1="16" x2="70" y2="122"></line>
@@ -426,6 +443,38 @@ function initOffsetDemo(host) {
         return { opt, cur: cp, base: bp };
     }
 
+    function drawG(phiHalfDeg, deltaDeg) {
+        const m = lambertOrder(phiHalfDeg);
+        const x0 = 70, x1 = 648, y0 = 24, y1 = 132;
+        const U = u => x0 + (u / 90) * (x1 - x0);
+        const gfn = u => Math.pow(Math.cos(u * Math.PI / 180), m) * Math.sin(u * Math.PI / 180);
+        let gmax = 1e-9, uStar = 0;
+        for (let u = 0; u <= 90; u += 0.5) {
+            const gv = gfn(u);
+            if (gv > gmax) { gmax = gv; uStar = u; }
+        }
+        const G = u => y1 - (gfn(u) / gmax) * (y1 - y0);
+        const pts = [];
+        for (let u = 0; u <= 90; u += 1) pts.push(`${U(u).toFixed(1)},${G(u).toFixed(1)}`);
+        $('od-g-curve').setAttribute('d', 'M ' + pts.join(' L '));
+        // sliding window (width φ½) starting at δ
+        const d2 = Math.min(90, deltaDeg + phiHalfDeg);
+        $('od-g-band').setAttribute('x', U(deltaDeg));
+        $('od-g-band').setAttribute('width', Math.max(0, U(d2) - U(deltaDeg)));
+        const seg = [];
+        for (let u = deltaDeg; u <= d2 + 1e-9; u += 0.5) {
+            seg.push(`${U(u).toFixed(1)},${G(u).toFixed(1)}`);
+        }
+        $('od-g-hi').setAttribute('points', seg.join(' '));
+        $('od-g-peak-line').setAttribute('x1', U(uStar));
+        $('od-g-peak-line').setAttribute('x2', U(uStar));
+        $('od-g-edge1').setAttribute('cx', U(deltaDeg));
+        $('od-g-edge1').setAttribute('cy', G(deltaDeg));
+        $('od-g-edge2').setAttribute('cx', U(d2));
+        $('od-g-edge2').setAttribute('cy', G(d2));
+        $('od-g-label').textContent = DEMO_TEXT.gLabel;
+    }
+
     function update() {
         const phiHalf = +phiIn.value;
         const maxD = 90 - phiHalf;
@@ -435,6 +484,7 @@ function initOffsetDemo(host) {
         $('od-phi-out').textContent = phiHalf + '°';
         $('od-del-out').textContent = delta.toFixed(1) + '°';
         drawScene(phiHalf, delta);
+        drawG(phiHalf, delta);
         const { opt, cur, base } = drawPlot(phiHalf, delta);
         const m = lambertOrder(phiHalf);
         const gain = base > 0 ? (opt.P - base) / base * 100 : 0;

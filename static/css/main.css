@@ -463,6 +463,48 @@ pre.bibtex {
     fill: #93a1ab;
 }
 
+.od-g-band {
+    fill: rgba(42, 167, 192, 0.10);
+}
+
+.od-g-curve {
+    fill: none;
+    stroke: rgba(42, 167, 192, 0.35);
+    stroke-width: 1.5;
+}
+
+.od-g-hi {
+    fill: none;
+    stroke: #2aa7c0;
+    stroke-width: 3;
+    stroke-linejoin: round;
+}
+
+.od-g-peak-line {
+    stroke: rgba(112, 30, 94, 0.35);
+    stroke-dasharray: 3 4;
+}
+
+.od-g-edge {
+    fill: #c2185b;
+}
+
+html[data-theme="dark"] .od-g-band {
+    fill: rgba(85, 214, 232, 0.10);
+}
+
+html[data-theme="dark"] .od-g-curve {
+    stroke: rgba(85, 214, 232, 0.35);
+}
+
+html[data-theme="dark"] .od-g-hi {
+    stroke: #55d6e8;
+}
+
+html[data-theme="dark"] .od-g-peak-line {
+    stroke: rgba(217, 168, 207, 0.4);
+}
+
 .od-curve {
     fill: none;
     stroke: #2aa7c0;
