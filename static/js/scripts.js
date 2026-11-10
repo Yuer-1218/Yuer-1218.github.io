@@ -15,14 +15,13 @@ const DEMO_TEXT = LANG === 'zh' ? {
     lgDensity: '● 每个点 = 一个节点（全部位于半径 d 的球面）',
     lgDensity2: '弧带厚度 ∝ 每度节点数 ∝ sin u',
     lgIntensity: '亮度 ∝ cosᵐ u（每节点接收光强）',
-    lgBand: '采集弧段：宽度 φ½，相对光轴偏移 δ',
+    lgBand: '采集弧段：半开角 φ½，中心相对光轴偏移 δ',
     phiFixed: 'φ½ = 45°（固定）',
     gainNow: '当前 δ 的增益',
-    winLabel: '采集角 φ½',
     axisLabel: '光轴',
     dLabel: '半径 d（固定）',
     statNodes: '采集段内节点',
-    modelNote: '半球截面示意：所有节点都位于同一半径 d 的球面上（对应式 (33) 中链路距离 L 为固定参数）。节点位置在立体角上均匀 ⇒ 每度节点数 ∝ sin u（u 为相对光轴的张角；球面上角度 u 处的环带面积 ∝ sin u），因此离光轴越远节点越密。每节点接收光强 ∝ cosᵐ u，故单位角度的贡献 g(u) = cosᵐ u · sin u 在 u* = arctan(1/√m) 处最大。采集角宽度固定为 φ½、相对光轴偏移 δ 时，采集弧段为 [δ, δ+φ½]；对 g(u) 在该区间积分，即得论文式 (33)：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)。',
+    modelNote: '半球截面示意：所有节点都位于同一半径 d 的球面上（对应式 (33) 中链路距离 L 为固定参数）。节点位置在立体角上均匀 ⇒ 每度节点数 ∝ sin u（u 为相对光轴的张角；球面上角度 u 处的环带面积 ∝ sin u），因此离光轴越远节点越密。每节点接收光强 ∝ cosᵐ u，故单位角度的贡献 g(u) = cosᵐ u · sin u 在 u* = arctan(1/√m) 处最大。采集弧以接收端指向 δ 为中心、半开角 φ½（即发射端主瓣）；论文式 (33) 对应主瓣远半段 [δ, δ+φ½] 的积分：P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½)，其中 m = −ln2/ln cos(φ½)。',
     fDiscover: '发现节点',
     fEnergy: '读取能量状态',
     fPre: '预充电',
@@ -43,14 +42,13 @@ const DEMO_TEXT = LANG === 'zh' ? {
     lgDensity: '● each dot = one node (all on the sphere of radius d)',
     lgDensity2: 'ribbon thickness ∝ nodes per degree ∝ sin u',
     lgIntensity: 'brightness ∝ cosᵐ u (per-node intensity)',
-    lgBand: 'collected arc: width φ½, offset δ from the optical axis',
+    lgBand: 'collected arc: half-angle φ½, centred at offset δ',
     phiFixed: 'φ½ = 45° (fixed)',
     gainNow: 'gain at current δ',
-    winLabel: 'collection angle φ½',
     axisLabel: 'optical axis',
     dLabel: 'radius d (fixed)',
     statNodes: 'nodes in collected arc',
-    modelNote: 'Hemisphere cross-section: every node lies on the same sphere of radius d (the link distance L is a fixed parameter in Eq. (33)). Node positions are uniform in solid angle, so the per-degree node count is ∝ sin u (u is the angle from the optical axis; a spherical ring at angle u has area ∝ sin u) — nodes are denser away from the axis. Each node receives intensity ∝ cosᵐ u, so the contribution per unit angle, g(u) = cosᵐ u · sin u, peaks at u* = arctan(1/√m). With the collection width fixed at φ½ and an offset δ from the optical axis, the collected arc is [δ, δ+φ½]; integrating g(u) over it gives Eq. (33): P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½) with m = −ln2 / ln cos(φ½).',
+    modelNote: 'Hemisphere cross-section: every node lies on the same sphere of radius d (the link distance L is a fixed parameter in Eq. (33)). Node positions are uniform in solid angle, so the per-degree node count is ∝ sin u (u is the angle from the optical axis; a spherical ring at angle u has area ∝ sin u) — nodes are denser away from the axis. Each node receives intensity ∝ cosᵐ u, so the contribution per unit angle, g(u) = cosᵐ u · sin u, peaks at u* = arctan(1/√m). The collected arc is the Tx main lobe (half-angle φ½), centred on the receiver pointing direction δ; Eq. (33) is its far half, the integral of g(u) over [δ, δ+φ½]: P(δ) ∝ cos^(m+1)(δ) − cos^(m+1)(δ+φ½) with m = −ln2 / ln cos(φ½).',
     fDiscover: 'Discover node',
     fEnergy: 'Read energy state',
     fPre: 'Preemptive charging',
@@ -233,7 +231,6 @@ function initOffsetDemo(host) {
         <g id="od-dots"></g>
         <path id="od-delta-arc" class="od-delta-arc-sm" d=""></path>
         <text id="od-delta-lab" class="od-delta-lab" x="0" y="0" text-anchor="middle"></text>
-        <text id="od-win-lab-phi" class="od-label-band" x="0" y="0" text-anchor="middle"></text>
         <line class="od-axis" x1="340" y1="46" x2="340" y2="276"></line>
         <text class="od-label-sm" x="330" y="70" text-anchor="end">${DEMO_TEXT.axisLabel}</text>
         <text class="od-label-sm od-d-lab" x="332" y="215" text-anchor="middle" transform="rotate(-90 332 215)">${DEMO_TEXT.dLabel}</text>
@@ -415,8 +412,8 @@ function initOffsetDemo(host) {
         $('od-del-out').textContent = delta.toFixed(1) + '°';
         const m = lambertOrder(phiHalf);
         const p0 = power(phiHalf, 0) || 1;
-        const d1 = delta, d2 = Math.min(90, delta + phiHalf);
-        // the collected arc [δ, δ+φ½] on the sphere of nodes
+        const d1 = Math.max(-90, delta - phiHalf), d2 = Math.min(90, delta + phiHalf);
+        // the collected arc = Tx main lobe (half-angle φ½), centred on the offset δ
         const A = pt(d1, D), B = pt(d2, D);
         const bandPath = `M ${f1(A[0])} ${f1(A[1])} A ${D} ${D} 0 0 0 ${f1(B[0])} ${f1(B[1])}`;
         $('od-band').setAttribute('d', bandPath);
@@ -432,23 +429,17 @@ function initOffsetDemo(host) {
         $('od-delta-lab').setAttribute('x', f1(dl[0]));
         $('od-delta-lab').setAttribute('y', f1(dl[1]));
         $('od-delta-lab').textContent = delta > 4 ? 'δ' : '';
-        // labels on the collected arc
-        const midA = d1 + (d2 - d1) / 2;
-        const mr = pt(midA, D);
-        $('od-mid-ray').setAttribute('x2', f1(mr[0]));
-        $('od-mid-ray').setAttribute('y2', f1(mr[1]));
-        const pl = pt(midA + 7, D - 40);
-        $('od-win-lab-phi').setAttribute('x', f1(pl[0]));
-        $('od-win-lab-phi').setAttribute('y', f1(pl[1]));
-        $('od-win-lab-phi').textContent = DEMO_TEXT.winLabel;
+        // radius from the centre to the middle of the collected arc = the δ direction
+        const mr = pt(delta, D);
+        $('od-mid-ray').setAttribute('x2', delta > 0.5 ? f1(mr[0]) : TXP.x);
+        $('od-mid-ray').setAttribute('y2', delta > 0.5 ? f1(mr[1]) : TXP.y);
         // highlight the nodes inside the collected arc
-        let inBand = 0, rightTotal = 0;
+        let inBand = 0;
         dotEls.forEach(({ el, ang }) => {
             const isIn = ang >= d1 - 0.25 && ang <= d2 + 0.25;
             el.classList.toggle('in-win', isIn);
             el.setAttribute('opacity', isIn ? '1' : '0.40');
             if (isIn) inBand++;
-            if (ang >= 0) rightTotal++;
         });
         drawPlot(phiHalf, delta);
         const opt = optimum(phiHalf);
@@ -460,7 +451,7 @@ function initOffsetDemo(host) {
           <div class="stat"><span class="stat-k">${DEMO_TEXT.deltaOpt}</span><span class="stat-v">${opt.delta.toFixed(1)}°</span></div>
           <div class="stat stat-gain"><span class="stat-k">${DEMO_TEXT.gainNow}</span><span class="stat-v">${sgn(gainNow)}</span></div>
           <div class="stat"><span class="stat-k">${DEMO_TEXT.gain}</span><span class="stat-v">${sgn(gain)}</span></div>
-          <div class="stat"><span class="stat-k">${DEMO_TEXT.statNodes}</span><span class="stat-v">${inBand} / ${rightTotal}</span></div>`;
+          <div class="stat"><span class="stat-k">${DEMO_TEXT.statNodes}</span><span class="stat-v">${inBand} / ${dotEls.length}</span></div>`;
     }
 
     buildStatic(45);
